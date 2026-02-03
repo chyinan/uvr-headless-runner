@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 MDX-Net Headless Runner
-用于在没有 GUI 的情况下运行 MDX-Net 模型分离
+Run MDX-Net model separation without GUI
 
-使用方法:
+Usage:
     python mdx_headless_runner.py --model model.ckpt --input input.wav --output output/
     
-    # 使用 JSON 配置文件（对于非标准模型）
+    # Use JSON config file (for non-standard models)
     python mdx_headless_runner.py --model model.ckpt --json config.json --input input.wav --output output/
 """
 
@@ -90,7 +90,7 @@ def get_model_hash(model_path):
                 f.seek(0)
                 return hashlib.md5(f.read()).hexdigest()
     except Exception as e:
-        print(f"警告: 无法计算模型哈希: {e}")
+        print(f"Warning: Cannot compute model hash: {e}")
         return None
 
 
@@ -123,7 +123,7 @@ def load_model_data_json(json_path=None, model_path=None):
                 with open(path, 'r', encoding='utf-8') as f:
                     return json.load(f), path
             except Exception as e:
-                print(f"警告: 无法加载 {path}: {e}")
+                print(f"Warning: Cannot load {path}: {e}")
     return {}, None
 
 
@@ -219,7 +219,7 @@ def create_model_data(model_path, **kwargs):
     if primary_only and secondary_only:
         secondary_only = False
         if verbose:
-            print("警告: 同时指定了 primary-only 和 secondary-only，将使用 primary-only")
+            print("Warning: Both primary-only and secondary-only specified, using primary-only")
     
     model_data.is_primary_stem_only = primary_only
     model_data.is_secondary_stem_only = secondary_only
@@ -314,7 +314,7 @@ def _load_model_config(model_data, model_path, **kwargs):
     # 计算模型哈希（与 UVR.py get_model_hash() 完全一致）
     model_hash = get_model_hash(model_path)
     if verbose and model_hash:
-        print(f"模型哈希: {model_hash}")
+        print(f"Model hash: {model_hash}")
     
     # ========== 步骤 1: 用户提供的配置文件（--json）==========
     if model_json_path and os.path.isfile(model_json_path):
@@ -329,7 +329,7 @@ def _load_model_config(model_data, model_path, **kwargs):
                 model_data.mdx_c_configs = ConfigDict(yaml_config)
                 
                 if verbose:
-                    print(f"从 YAML 加载配置: {model_json_path}")
+                    print(f"Loaded config from YAML: {model_json_path}")
                 
                 training = model_data.mdx_c_configs.get('training', {})
                 if training.get('target_instrument'):
@@ -351,12 +351,12 @@ def _load_model_config(model_data, model_path, **kwargs):
                     config = json.load(f)
                 
                 if verbose:
-                    print(f"从 JSON 加载配置: {model_json_path}")
+                    print(f"Loaded config from JSON: {model_json_path}")
                 
                 _apply_config(model_data, config, kwargs, verbose, model_path)
                 return
         except Exception as e:
-            print(f"警告: 无法从配置文件加载: {e}")
+            print(f"Warning: Cannot load from config file: {e}")
     
     # ========== 步骤 2: 哈希查找（与 UVR get_model_data() 一致）==========
     # 2a: 首先检查单独的 {hash}.json 文件（UVR.py 第 741-744 行）
@@ -374,11 +374,11 @@ def _load_model_config(model_data, model_path, **kwargs):
                     with open(hash_json_path, 'r', encoding='utf-8') as f:
                         config = json.load(f)
                     if verbose:
-                        print(f"从哈希 JSON 文件加载配置: {os.path.basename(hash_json_path)}")
+                        print(f"Loaded config from hash JSON: {os.path.basename(hash_json_path)}")
                     _apply_config(model_data, config, kwargs, verbose, model_path)
                     return
                 except Exception as e:
-                    print(f"警告: 无法加载 {hash_json_path}: {e}")
+                    print(f"Warning: Cannot load {hash_json_path}: {e}")
     
     # 2b: 检查 model_data.json 中的哈希映射
     model_data_db, db_path = load_model_data_json(model_path=model_path)
@@ -386,7 +386,7 @@ def _load_model_config(model_data, model_path, **kwargs):
     if model_hash and model_hash in model_data_db:
         config = model_data_db[model_hash]
         if verbose:
-            print(f"从 model_data.json 加载配置 (哈希: {model_hash[:8]}...)")
+            print(f"Loaded config from model_data.json (hash: {model_hash[:8]}...)")
         
         _apply_config(model_data, config, kwargs, verbose, model_path)
         return
@@ -399,7 +399,7 @@ def _load_model_config(model_data, model_path, **kwargs):
     
     # ========== 步骤 4: 使用 CLI 参数和 UVR GUI 默认值 ==========
     if verbose:
-        print("使用 CLI 参数 + UVR GUI 默认值")
+        print("Using CLI arguments + UVR GUI defaults")
     
     # 使用 CLI 参数覆盖，否则使用 UVR GUI 的默认值
     model_data.mdx_dim_f_set = kwargs.get('mdx_dim_f_set', 3072)
@@ -431,13 +431,13 @@ def _auto_detect_from_model_file(model_data, model_path, kwargs, verbose=False):
             if 'hyper_parameters' not in checkpoint:
                 # 没有 hyper_parameters，可能是 MDX-C 模型
                 if verbose:
-                    print("检测到 .ckpt 但无 hyper_parameters，可能需要 YAML 配置")
+                    print("Detected .ckpt without hyper_parameters, may need YAML config")
                 return False
             
             params = checkpoint['hyper_parameters']
             
             if verbose:
-                print("从 checkpoint hyper_parameters 自动检测参数")
+                print("Auto-detected parameters from checkpoint hyper_parameters")
             
             # 与 UVR 完全一致的参数提取
             model_data.mdx_dim_f_set = params.get('dim_f', 3072)
@@ -482,7 +482,7 @@ def _auto_detect_from_model_file(model_data, model_path, kwargs, verbose=False):
             
         except Exception as e:
             if verbose:
-                print(f"警告: 无法从 checkpoint 自动检测: {e}")
+                print(f"Warning: Cannot auto-detect from checkpoint: {e}")
             return False
     
     elif is_onnx:
@@ -500,7 +500,7 @@ def _auto_detect_from_model_file(model_data, model_path, kwargs, verbose=False):
             n_fft = 6144  # UVR 对 ONNX 使用硬编码默认值 '6144'
             
             if verbose:
-                print("从 ONNX tensor shape 自动检测参数")
+                print("Auto-detected parameters from ONNX tensor shape")
             
             model_data.mdx_dim_f_set = dim_f
             model_data.mdx_dim_t_set = dim_t
@@ -519,11 +519,11 @@ def _auto_detect_from_model_file(model_data, model_path, kwargs, verbose=False):
             
         except ImportError:
             if verbose:
-                print("警告: 未安装 onnx 包，无法自动检测 ONNX 模型参数")
+                print("Warning: onnx package not installed, cannot auto-detect ONNX model parameters")
             return False
         except Exception as e:
             if verbose:
-                print(f"警告: 无法从 ONNX 自动检测: {e}")
+                print(f"Warning: Cannot auto-detect from ONNX: {e}")
             return False
     
     return False
@@ -545,7 +545,7 @@ def _apply_config(model_data, config, kwargs, verbose=False, model_path=None):
                 model_data.mdx_c_configs = ConfigDict(yaml_config)
             
             if verbose:
-                print(f"加载 MDX-C 配置: {config_yaml}")
+                print(f"Loaded MDX-C config: {config_yaml}")
             
             # 从 training 配置获取 stems
             training = model_data.mdx_c_configs.get('training', {})
@@ -573,19 +573,19 @@ def _apply_config(model_data, config, kwargs, verbose=False, model_path=None):
             if 'num_bands' in model_config or 'freqs_per_bands' in model_config:
                 model_data.is_roformer = True
                 if verbose and not config.get('is_roformer', False):
-                    print("自动检测为 Roformer 模型 (基于 YAML 配置)")
+                    print("Auto-detected as Roformer model (based on YAML config)")
             elif 'band_SR' in model_config or 'sources' in model_config:
                 # SCNet model detection
                 model_data.is_roformer = True  # SCNet 也使用 is_roformer=True 的处理路径
                 if verbose:
-                    print("自动检测为 SCNet 模型 (基于 YAML 配置)")
+                    print("Auto-detected as SCNet model (based on YAML config)")
             
             if model_data.is_roformer:
                 if verbose:
                     model_type = config.get('model_type', 'Roformer')
-                    print(f"模型类型: {model_type}")
+                    print(f"Model type: {model_type}")
         else:
-            print(f"警告: 找不到配置文件 {config_yaml}")
+            print(f"Warning: Config file not found: {config_yaml}")
             model_data.is_mdx_c = False
     else:
         # 标准 MDX-Net 模型
@@ -671,9 +671,9 @@ def run_mdx_headless(
     """
     # 验证输入
     if not os.path.isfile(model_path):
-        raise FileNotFoundError(f"模型文件不存在: {model_path}")
+        raise FileNotFoundError(f"Model file not found: {model_path}")
     if not os.path.isfile(audio_file):
-        raise FileNotFoundError(f"音频文件不存在: {audio_file}")
+        raise FileNotFoundError(f"Audio file not found: {audio_file}")
     if not os.path.isdir(export_path):
         os.makedirs(export_path, exist_ok=True)
     
@@ -689,7 +689,7 @@ def run_mdx_headless(
         }
         stem_lower = stem.lower()
         if stem_lower not in stem_map:
-            raise ValueError(f"无效的 stem: {stem}")
+            raise ValueError(f"Invalid stem: {stem}")
         mdxnet_stem_select = stem_map[stem_lower]
     
     # 创建 ModelData
@@ -745,16 +745,16 @@ def run_mdx_headless(
         print(f"=" * 50)
         print(f"MDX-Net Headless Runner")
         print(f"=" * 50)
-        print(f"模型: {model_path}")
-        print(f"输入: {audio_file}")
-        print(f"输出目录: {export_path}")
-        print(f"设备: {'GPU' if model_data.is_gpu_conversion >= 0 else 'CPU'}")
-        print(f"模型类型: {'MDX-C/Roformer' if model_data.is_mdx_c else 'MDX-Net'}")
-        print(f"输出格式: {model_data.wav_type_set}")
+        print(f"Model: {model_path}")
+        print(f"Input: {audio_file}")
+        print(f"Output: {export_path}")
+        print(f"Device: {'GPU' if model_data.is_gpu_conversion >= 0 else 'CPU'}")
+        print(f"Model Type: {'MDX-C/Roformer' if model_data.is_mdx_c else 'MDX-Net'}")
+        print(f"Output Format: {model_data.wav_type_set}")
         print(f"Primary Stem: {model_data.primary_stem}")
         print(f"Secondary Stem: {model_data.secondary_stem}")
         if not model_data.is_mdx_c:
-            print(f"参数: dim_f={model_data.mdx_dim_f_set}, dim_t={2**model_data.mdx_dim_t_set}, n_fft={model_data.mdx_n_fft_scale_set}")
+            print(f"Params: dim_f={model_data.mdx_dim_f_set}, dim_t={2**model_data.mdx_dim_t_set}, n_fft={model_data.mdx_n_fft_scale_set}")
         print(f"=" * 50)
     
     # 运行分离 - 使用 UVR 原有的类
@@ -766,60 +766,60 @@ def run_mdx_headless(
     separator.seperate()
     
     if verbose:
-        print(f"\n处理完成!")
-        print(f"输出目录: {export_path}")
+        print(f"\nProcessing complete!")
+        print(f"Output: {export_path}")
 
 
 def main():
     """命令行入口"""
     parser = argparse.ArgumentParser(
-        description='MDX-Net Headless Runner - 使用 UVR 原有代码进行音频分离',
+        description='MDX-Net Headless Runner - Audio source separation using UVR codebase',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-示例:
-  # 基本使用
+Examples:
+  # Basic usage
   python mdx_headless_runner.py -m model.ckpt -i input.wav -o output/
   
-  # 使用 JSON 配置（对于非标准模型如 MelBand-Roformer）
+  # Use JSON config (for non-standard models like MelBand-Roformer)
   python mdx_headless_runner.py -m model.ckpt --json config.json -i input.wav -o output/
   
-  # 仅输出人声
+  # Output vocals only
   python mdx_headless_runner.py -m model.ckpt -i input.wav -o output/ --vocals-only
   
-  # 使用 GPU
+  # Use GPU
   python mdx_headless_runner.py -m model.ckpt -i input.wav -o output/ --gpu
 """
     )
     
-    parser.add_argument('--model', '-m', required=True, help='模型文件路径 (.ckpt)')
-    parser.add_argument('--input', '-i', required=True, help='输入音频文件路径')
-    parser.add_argument('--output', '-o', required=True, help='输出目录路径')
-    parser.add_argument('--name', '-n', help='输出文件基础名称（可选）')
-    parser.add_argument('--json', help='模型 JSON 配置文件路径（对于非标准模型必需）')
-    parser.add_argument('--gpu', action='store_true', help='使用 GPU')
-    parser.add_argument('--cpu', action='store_true', help='强制使用 CPU')
-    parser.add_argument('--directml', action='store_true', help='使用 DirectML (AMD GPU)')
-    parser.add_argument('--device', '-d', default='0', help='GPU 设备 ID (默认: 0)')
-    parser.add_argument('--segment-size', type=int, default=256, help='段大小 (默认: 256)')
-    parser.add_argument('--overlap', type=float, default=0.25, help='MDX 重叠率 (默认: 0.25，范围 0.25-0.99)')
-    parser.add_argument('--overlap-mdxc', type=int, default=2, help='MDX-C/Roformer 重叠 (默认: 2，范围 2-50)')
-    parser.add_argument('--batch-size', type=int, default=1, help='批次大小 (默认: 1)')
+    parser.add_argument('--model', '-m', required=True, help='Model file path (.ckpt)')
+    parser.add_argument('--input', '-i', required=True, help='Input audio file path')
+    parser.add_argument('--output', '-o', required=True, help='Output directory path')
+    parser.add_argument('--name', '-n', help='Output filename base (optional)')
+    parser.add_argument('--json', help='Model JSON config file path (required for non-standard models)')
+    parser.add_argument('--gpu', action='store_true', help='Use GPU')
+    parser.add_argument('--cpu', action='store_true', help='Force CPU')
+    parser.add_argument('--directml', action='store_true', help='Use DirectML (AMD GPU)')
+    parser.add_argument('--device', '-d', default='0', help='GPU device ID (default: 0)')
+    parser.add_argument('--segment-size', type=int, default=256, help='Segment size (default: 256)')
+    parser.add_argument('--overlap', type=float, default=0.25, help='MDX overlap (default: 0.25, range 0.25-0.99)')
+    parser.add_argument('--overlap-mdxc', type=int, default=2, help='MDX-C/Roformer overlap (default: 2, range 2-50)')
+    parser.add_argument('--batch-size', type=int, default=1, help='Batch size (default: 1)')
     parser.add_argument('--wav-type', default='PCM_24', 
                         choices=['PCM_U8', 'PCM_16', 'PCM_24', 'PCM_32', 'FLOAT', 'DOUBLE'],
-                        help='输出音频位深度 (默认: PCM_24)')
+                        help='Output audio bit depth (default: PCM_24)')
     
-    # 输出控制
-    output_group = parser.add_argument_group('输出控制')
-    output_group.add_argument('--primary-only', action='store_true', help='仅保存 primary stem')
-    output_group.add_argument('--secondary-only', action='store_true', help='仅保存 secondary stem')
-    output_group.add_argument('--dry-only', action='store_true', help='仅保存 Dry (= --primary-only)')
-    output_group.add_argument('--no-dry-only', action='store_true', help='仅保存 No Dry (= --secondary-only)')
-    output_group.add_argument('--vocals-only', action='store_true', help='仅保存人声 (= --primary-only)')
-    output_group.add_argument('--instrumental-only', action='store_true', help='仅保存伴奏 (= --secondary-only)')
+    # Output control
+    output_group = parser.add_argument_group('Output Control')
+    output_group.add_argument('--primary-only', action='store_true', help='Save primary stem only')
+    output_group.add_argument('--secondary-only', action='store_true', help='Save secondary stem only')
+    output_group.add_argument('--dry-only', action='store_true', help='Save Dry only (= --primary-only)')
+    output_group.add_argument('--no-dry-only', action='store_true', help='Save No Dry only (= --secondary-only)')
+    output_group.add_argument('--vocals-only', action='store_true', help='Save vocals only (= --primary-only)')
+    output_group.add_argument('--instrumental-only', action='store_true', help='Save instrumental only (= --secondary-only)')
     
     parser.add_argument('--stem', choices=['all', 'vocals', 'drums', 'bass', 'other'],
-                       help='选择要提取的 stem（仅 MDX-C 模型）')
-    parser.add_argument('--quiet', '-q', action='store_true', help='静默模式')
+                       help='Select stem to extract (MDX-C models only)')
+    parser.add_argument('--quiet', '-q', action='store_true', help='Quiet mode')
     
     args = parser.parse_args()
     
@@ -865,7 +865,7 @@ def main():
         return 0
     except Exception as e:
         import traceback
-        print(f"错误: {e}", file=sys.stderr)
+        print(f"Error: {e}", file=sys.stderr)
         if not args.quiet:
             traceback.print_exc()
         return 1

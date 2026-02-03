@@ -794,7 +794,7 @@ class SeperateMDXC(SeperateAttributes):
         model = model if not isinstance(model, torch.nn.DataParallel) else model.module
         model.load_state_dict(checkpoint)
         model.to(device).eval()
-        mix = torch.tensor(mix, dtype=torch.float32)
+        mix = torch.tensor(mix, dtype=torch.float32, device=device)  # 确保 tensor 在 GPU 上
 
         segment_size = self.mdx_c_configs.inference.dim_t if self.is_mdx_c_seg_def else self.mdx_segment_size
         S = 1 if self.roformer_config.training.target_instrument else len(self.roformer_config.training.instruments)
