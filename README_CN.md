@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-  <strong>🇨🇳 中文</strong> | <a href="README.md">🇬🇧 English</a>
+  <strong>🇨🇳 中文</strong> | <a href="README.md">🇬🇧 English</a> | <a href="DOCKER_README_CN.md">🐳 Docker</a>
 </p>
 
 ---
@@ -194,6 +194,24 @@ python mdx_headless_runner.py -m model.ckpt -i song.wav -o output/ --directml
 ```
 
 > ⚠️ DirectML 为实验性功能，推荐使用 NVIDIA CUDA 以获得最佳性能。
+
+</details>
+
+<details>
+<summary><b>🐳 方式三：Docker（生产环境推荐）</b></summary>
+
+```bash
+# 一键安装（自动检测 GPU）
+./docker/install.sh      # Linux/macOS
+.\docker\install.ps1     # Windows
+
+# 然后像原生命令一样使用
+uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr-demucs -m htdemucs -i song.wav -o output/
+uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
+```
+
+📖 **[查看完整 Docker 指南 →](DOCKER_README_CN.md)**
 
 </details>
 

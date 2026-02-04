@@ -1,0 +1,48 @@
+#!/bin/bash
+# ==============================================================================
+# uvr-vr - VR Architecture Audio Source Separation CLI
+# ==============================================================================
+# Native-style CLI wrapper for VR headless runner
+#
+# Usage:
+#   uvr-vr -m "UVR-De-Echo-Normal" -i input.wav -o output/
+#   uvr-vr --list
+#   uvr-vr --download "UVR-De-Echo-Aggressive"
+#
+# ==============================================================================
+
+set -e
+
+# Determine script location and app root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Check if running inside container or host
+if [ -f /app/vr_headless_runner.py ]; then
+    APP_ROOT="/app"
+elif [ -f "${SCRIPT_DIR}/../../vr_headless_runner.py" ]; then
+    APP_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+else
+    echo "Error: Cannot find vr_headless_runner.py" >&2
+    exit 1
+fi
+
+# Auto-detect GPU if not explicitly set
+if [ -z "${UVR_DEVICE}" ]; then
+    if command -v nvidia-smi &> /dev/null && nvidia-smi &> /dev/null; then
+        UVR_DEVICE="cuda"
+    else
+        UVR_DEVICE="cpu"
+    fi
+fi
+
+# Build GPU/CPU flag
+GPU_FLAG=""
+if [ "${UVR_DEVICE}" = "cuda" ] || [ "${UVR_DEVICE}" = "gpu" ]; then
+    GPU_FLAG="--gpu"
+elif [ "${UVR_DEVICE}" = "cpu" ]; then
+    GPU_FLAG="--cpu"
+fi
+
+# Execute the runner
+cd "${APP_ROOT}"
+exec python vr_headless_runner.py ${GPU_FLAG} "$@"

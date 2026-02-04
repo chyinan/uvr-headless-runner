@@ -27,7 +27,7 @@
 </p>
 
 <p align="center">
-  <a href="README_CN.md">🇨🇳 中文</a> | <strong>🇬🇧 English</strong>
+  <a href="README_CN.md">🇨🇳 中文</a> | <strong>🇬🇧 English</strong> | <a href="DOCKER_README.md">🐳 Docker</a>
 </p>
 
 ---
@@ -194,6 +194,24 @@ python mdx_headless_runner.py -m model.ckpt -i song.wav -o output/ --directml
 ```
 
 > ⚠️ DirectML is experimental. NVIDIA CUDA recommended for best performance.
+
+</details>
+
+<details>
+<summary><b>🐳 Option 3: Docker (Recommended for Production)</b></summary>
+
+```bash
+# One-click install (auto-detects GPU)
+./docker/install.sh      # Linux/macOS
+.\docker\install.ps1     # Windows
+
+# Then use like native commands
+uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr-demucs -m htdemucs -i song.wav -o output/
+uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
+```
+
+📖 **[Full Docker Guide →](DOCKER_README.md)**
 
 </details>
 

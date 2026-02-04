@@ -1,0 +1,210 @@
+#!/bin/bash
+# ==============================================================================
+# uvr - Universal UVR CLI Entry Point
+# ==============================================================================
+# Unified CLI that dispatches to the appropriate runner based on subcommand
+#
+# Usage:
+#   uvr mdx -m "Kim Vocal 2" -i input.wav -o output/
+#   uvr demucs -m htdemucs -i input.wav -o output/
+#   uvr vr -m "UVR-De-Echo-Normal" -i input.wav -o output/
+#   uvr list [mdx|demucs|vr]
+#   uvr download <model-name> --arch <mdx|demucs|vr>
+#   uvr info
+#
+# ==============================================================================
+
+set -e
+
+VERSION="1.0.0"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Color output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+print_banner() {
+    echo -e "${BLUE}"
+    echo "╔═══════════════════════════════════════════════════════════════╗"
+    echo "║     UVR Headless Runner - Audio Source Separation CLI         ║"
+    echo "║                        Version ${VERSION}                          ║"
+    echo "╚═══════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+print_usage() {
+    print_banner
+    echo "Usage: uvr <command> [options]"
+    echo ""
+    echo "Commands:"
+    echo "  mdx       Run MDX-Net/Roformer separation"
+    echo "  demucs    Run Demucs separation"
+    echo "  vr        Run VR Architecture separation"
+    echo "  list      List available models"
+    echo "  download  Download a model"
+    echo "  info      Show system information"
+    echo "  help      Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  uvr mdx -m \"Kim Vocal 2\" -i song.wav -o output/"
+    echo "  uvr demucs -m htdemucs -i song.wav -o output/"
+    echo "  uvr vr -m \"UVR-De-Echo-Normal\" -i song.wav -o output/"
+    echo "  uvr list mdx"
+    echo "  uvr download \"htdemucs_ft\" --arch demucs"
+    echo ""
+    echo "For command-specific help:"
+    echo "  uvr mdx --help"
+    echo "  uvr demucs --help"
+    echo "  uvr vr --help"
+}
+
+print_info() {
+    print_banner
+    echo "System Information:"
+    echo "==================="
+    
+    # Python version
+    echo -n "Python: "
+    python --version 2>&1 | cut -d' ' -f2
+    
+    # PyTorch version and CUDA
+    echo -n "PyTorch: "
+    python -c "import torch; print(torch.__version__)" 2>/dev/null || echo "Not installed"
+    
+    echo -n "CUDA Available: "
+    python -c "import torch; print('Yes' if torch.cuda.is_available() else 'No')" 2>/dev/null || echo "Unknown"
+    
+    if python -c "import torch; exit(0 if torch.cuda.is_available() else 1)" 2>/dev/null; then
+        echo -n "CUDA Version: "
+        python -c "import torch; print(torch.version.cuda)" 2>/dev/null || echo "Unknown"
+        echo -n "GPU Device: "
+        python -c "import torch; print(torch.cuda.get_device_name(0))" 2>/dev/null || echo "Unknown"
+    fi
+    
+    # Model directory
+    echo ""
+    echo "Model Directory: ${UVR_MODELS_DIR:-/models}"
+    
+    # Check model counts
+    echo ""
+    echo "Installed Models:"
+    if [ -d "${UVR_MODELS_DIR:-/models}/MDX_Net_Models" ]; then
+        MDX_COUNT=$(find "${UVR_MODELS_DIR:-/models}/MDX_Net_Models" -name "*.onnx" -o -name "*.ckpt" 2>/dev/null | wc -l)
+        echo "  MDX-Net: ${MDX_COUNT} models"
+    fi
+    if [ -d "${UVR_MODELS_DIR:-/models}/Demucs_Models" ]; then
+        DEMUCS_COUNT=$(find "${UVR_MODELS_DIR:-/models}/Demucs_Models" -name "*.th" -o -name "*.yaml" 2>/dev/null | wc -l)
+        echo "  Demucs: ${DEMUCS_COUNT} files"
+    fi
+    if [ -d "${UVR_MODELS_DIR:-/models}/VR_Models" ]; then
+        VR_COUNT=$(find "${UVR_MODELS_DIR:-/models}/VR_Models" -name "*.pth" 2>/dev/null | wc -l)
+        echo "  VR: ${VR_COUNT} models"
+    fi
+}
+
+# Parse command
+COMMAND="${1:-help}"
+shift || true
+
+case "${COMMAND}" in
+    mdx)
+        exec "${SCRIPT_DIR}/uvr-mdx" "$@"
+        ;;
+    demucs)
+        exec "${SCRIPT_DIR}/uvr-demucs" "$@"
+        ;;
+    vr)
+        exec "${SCRIPT_DIR}/uvr-vr" "$@"
+        ;;
+    list)
+        ARCH="${1:-all}"
+        case "${ARCH}" in
+            mdx)
+                exec "${SCRIPT_DIR}/uvr-mdx" --list
+                ;;
+            demucs)
+                exec "${SCRIPT_DIR}/uvr-demucs" --list
+                ;;
+            vr)
+                exec "${SCRIPT_DIR}/uvr-vr" --list
+                ;;
+            all|"")
+                echo "=== MDX-Net Models ==="
+                "${SCRIPT_DIR}/uvr-mdx" --list 2>/dev/null || echo "  (unavailable)"
+                echo ""
+                echo "=== Demucs Models ==="
+                "${SCRIPT_DIR}/uvr-demucs" --list 2>/dev/null || echo "  (unavailable)"
+                echo ""
+                echo "=== VR Models ==="
+                "${SCRIPT_DIR}/uvr-vr" --list 2>/dev/null || echo "  (unavailable)"
+                ;;
+            *)
+                echo "Unknown architecture: ${ARCH}"
+                echo "Valid options: mdx, demucs, vr, all"
+                exit 1
+                ;;
+        esac
+        ;;
+    download)
+        MODEL_NAME="$1"
+        shift || true
+        ARCH=""
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                --arch|-a)
+                    ARCH="$2"
+                    shift 2
+                    ;;
+                *)
+                    shift
+                    ;;
+            esac
+        done
+        
+        if [ -z "${MODEL_NAME}" ]; then
+            echo "Error: Model name required"
+            echo "Usage: uvr download <model-name> --arch <mdx|demucs|vr>"
+            exit 1
+        fi
+        
+        if [ -z "${ARCH}" ]; then
+            echo "Error: Architecture required"
+            echo "Usage: uvr download <model-name> --arch <mdx|demucs|vr>"
+            exit 1
+        fi
+        
+        case "${ARCH}" in
+            mdx)
+                exec "${SCRIPT_DIR}/uvr-mdx" --download "${MODEL_NAME}"
+                ;;
+            demucs)
+                exec "${SCRIPT_DIR}/uvr-demucs" --download "${MODEL_NAME}"
+                ;;
+            vr)
+                exec "${SCRIPT_DIR}/uvr-vr" --download "${MODEL_NAME}"
+                ;;
+            *)
+                echo "Unknown architecture: ${ARCH}"
+                exit 1
+                ;;
+        esac
+        ;;
+    info)
+        print_info
+        ;;
+    help|--help|-h)
+        print_usage
+        ;;
+    version|--version|-v)
+        echo "uvr version ${VERSION}"
+        ;;
+    *)
+        echo -e "${RED}Error: Unknown command '${COMMAND}'${NC}"
+        echo ""
+        print_usage
+        exit 1
+        ;;
+esac

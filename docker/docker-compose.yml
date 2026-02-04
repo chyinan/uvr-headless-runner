@@ -1,0 +1,101 @@
+# ==============================================================================
+# UVR Headless Runner - Docker Compose Configuration
+# ==============================================================================
+# 
+# Usage:
+#   # GPU mode (default)
+#   docker compose up -d
+#   docker compose run --rm uvr uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+#
+#   # CPU mode
+#   docker compose --profile cpu up -d
+#   docker compose run --rm uvr-cpu uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+#
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  # ============================================================================
+  # GPU Service (Default)
+  # ============================================================================
+  uvr:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: gpu
+    image: uvr-headless:gpu
+    container_name: uvr-headless-gpu
+    
+    # NVIDIA GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    # Environment
+    environment:
+      - UVR_DEVICE=cuda
+      - UVR_MODELS_DIR=/models
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    
+    # Volumes
+    volumes:
+      # Model cache (persistent)
+      - uvr-models:/models
+      # Input/Output directories (bind mount your local directories)
+      - ${UVR_INPUT_DIR:-./input}:/input:ro
+      - ${UVR_OUTPUT_DIR:-./output}:/output
+      # Optional: Mount specific model files
+      # - /path/to/your/models:/models:ro
+    
+    # Working directory
+    working_dir: /app
+    
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+    
+    # Restart policy
+    restart: "no"
+
+  # ============================================================================
+  # CPU Service (Alternative)
+  # ============================================================================
+  uvr-cpu:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: cpu
+    image: uvr-headless:cpu
+    container_name: uvr-headless-cpu
+    profiles:
+      - cpu
+    
+    # Environment
+    environment:
+      - UVR_DEVICE=cpu
+      - UVR_MODELS_DIR=/models
+    
+    # Volumes
+    volumes:
+      - uvr-models:/models
+      - ${UVR_INPUT_DIR:-./input}:/input:ro
+      - ${UVR_OUTPUT_DIR:-./output}:/output
+    
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    restart: "no"
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  uvr-models:
+    name: uvr-models
+    driver: local
