@@ -124,12 +124,6 @@ create_wrapper() {
     
     log_info "Creating wrapper: ${cmd_name}"
     
-    # Determine GPU flags
-    local gpu_flags=""
-    if [ "${target}" = "gpu" ]; then
-        gpu_flags="--gpus all"
-    fi
-    
     cat > "/tmp/${cmd_name}" << EOF
 #!/bin/bash
 # ==============================================================================
@@ -224,14 +218,32 @@ while [[ \$# -gt 0 ]]; do
     esac
 done
 
+# Build docker run command
+# Use -it only if running in a terminal
+if [ -t 0 ] && [ -t 1 ]; then
+    DOCKER_CMD=(docker run --rm -it)
+else
+    DOCKER_CMD=(docker run --rm)
+fi
+EOF
+
+    # Add GPU flags conditionally
+    if [ "${target}" = "gpu" ]; then
+        cat >> "/tmp/${cmd_name}" << 'EOF'
+DOCKER_CMD+=(--gpus all)
+EOF
+    fi
+
+    cat >> "/tmp/${cmd_name}" << EOF
+DOCKER_CMD+=(-v "\${MODELS_DIR}:/models")
+DOCKER_CMD+=("\${MOUNT_ARGS[@]}")
+DOCKER_CMD+=(-e "UVR_MODELS_DIR=/models")
+DOCKER_CMD+=("\${IMAGE}")
+DOCKER_CMD+=(${runner_script})
+DOCKER_CMD+=("\${PROCESSED_ARGS[@]}")
+
 # Run container
-exec docker run --rm -it \\
-    ${gpu_flags} \\
-    -v "\${MODELS_DIR}:/models" \\
-    "\${MOUNT_ARGS[@]}" \\
-    -e "UVR_MODELS_DIR=/models" \\
-    "\${IMAGE}" \\
-    ${runner_script} "\${PROCESSED_ARGS[@]}"
+exec "\${DOCKER_CMD[@]}"
 EOF
 
     # Install wrapper

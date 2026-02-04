@@ -37,6 +37,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Rubberband for time-stretching
     rubberband-cli \
     librubberband-dev \
+    # Samplerate library
+    libsamplerate0 \
+    libsamplerate0-dev \
     # Build essentials (for some pip packages)
     build-essential \
     gcc \
@@ -76,18 +79,16 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Upgrade pip
 RUN pip install --upgrade pip setuptools wheel
 
-# Copy requirements first for better caching
-COPY requirements.txt /tmp/requirements.txt
-
 # Install Python dependencies (CPU versions first, GPU can override later)
+# Note: Dependencies are pinned to match poetry.lock versions
 # Note: We install torch CPU version here, GPU stage will replace it
 RUN pip install \
     numpy==1.23.5 \
     scipy==1.9.3 \
     && pip install \
-    torch==2.8.0+cpu \
-    torchaudio==2.8.0+cpu \
-    torchvision==0.23.0+cpu \
+    torch==2.6.0+cpu \
+    torchaudio==2.6.0+cpu \
+    torchvision==0.21.0+cpu \
     --index-url https://download.pytorch.org/whl/cpu \
     && pip install \
     librosa==0.9.2 \
@@ -103,13 +104,16 @@ RUN pip install \
     omegaconf==2.2.3 \
     onnx==1.19.1 \
     onnx2pytorch==0.5.3 \
-    onnxruntime==1.16.3 \
+    onnxruntime==1.19.2 \
     rotary-embedding-torch==0.8.9 \
     beartype==0.15.0 \
     PyYAML==6.0 \
     natsort==8.2.0 \
     tqdm \
-    samplerate==0.2.3 \
+    rich \
+    requests \
+    aiohttp \
+    samplerate==0.1.0 \
     diffq==0.2.4
 
 # ------------------------------------------------------------------------------
@@ -124,9 +128,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy application code
 COPY --chown=uvr:uvr . /app/
 
-# Copy CLI wrapper scripts
+# Copy CLI wrapper scripts and set permissions
 COPY --chown=uvr:uvr docker/bin/ /usr/local/bin/
-RUN chmod +x /usr/local/bin/uvr-* 2>/dev/null || true
+RUN chmod +x /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr
 
 # Copy entrypoint
 COPY --chown=uvr:uvr docker/entrypoint.sh /entrypoint.sh
@@ -137,11 +141,20 @@ ENV UVR_MODELS_DIR=/models \
     UVR_DEVICE=cpu \
     NUMBA_CACHE_DIR=/tmp/numba_cache
 
+# Copy model metadata to a separate location (will be copied to volume on first run)
+RUN mkdir -p /app/models_data/VR_Models /app/models_data/MDX_Net_Models /app/models_data/Demucs_Models /app/models_data/Apollo_Models && \
+    (cp -r /app/models/VR_Models/model_data /app/models_data/VR_Models/ 2>/dev/null || true) && \
+    (cp -r /app/models/MDX_Net_Models/model_data /app/models_data/MDX_Net_Models/ 2>/dev/null || true) && \
+    (cp -r /app/models/Demucs_Models/model_data /app/models_data/Demucs_Models/ 2>/dev/null || true) && \
+    (cp -r /app/models/Apollo_Models/* /app/models_data/Apollo_Models/ 2>/dev/null || true)
+
 # Create symlinks for model directories to use mounted volume
-RUN mkdir -p /app/models && \
-    ln -sf /models/VR_Models /app/models/VR_Models 2>/dev/null || true && \
-    ln -sf /models/MDX_Net_Models /app/models/MDX_Net_Models 2>/dev/null || true && \
-    ln -sf /models/Demucs_Models /app/models/Demucs_Models 2>/dev/null || true
+RUN rm -rf /app/models/VR_Models /app/models/MDX_Net_Models /app/models/Demucs_Models /app/models/Apollo_Models && \
+    ln -sf /models/VR_Models /app/models/VR_Models && \
+    ln -sf /models/MDX_Net_Models /app/models/MDX_Net_Models && \
+    ln -sf /models/Demucs_Models /app/models/Demucs_Models && \
+    ln -sf /models/Apollo_Models /app/models/Apollo_Models && \
+    chown -R uvr:uvr /app/models /app/models_data
 
 # Switch to non-root user
 USER uvr
@@ -178,6 +191,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Rubberband
     rubberband-cli \
     librubberband-dev \
+    # Samplerate library
+    libsamplerate0 \
+    libsamplerate0-dev \
     # Build essentials
     build-essential \
     gcc \
@@ -185,6 +201,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Utilities
     curl \
     wget \
+    git \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -216,9 +233,9 @@ RUN pip install \
     numpy==1.23.5 \
     scipy==1.9.3 \
     && pip install \
-    torch==2.8.0+cu124 \
-    torchaudio==2.8.0+cu124 \
-    torchvision==0.23.0+cu124 \
+    torch==2.6.0+cu124 \
+    torchaudio==2.6.0+cu124 \
+    torchvision==0.21.0+cu124 \
     --index-url https://download.pytorch.org/whl/cu124 \
     && pip install \
     librosa==0.9.2 \
@@ -234,13 +251,16 @@ RUN pip install \
     omegaconf==2.2.3 \
     onnx==1.19.1 \
     onnx2pytorch==0.5.3 \
-    onnxruntime-gpu==1.16.3 \
+    onnxruntime-gpu==1.19.2 \
     rotary-embedding-torch==0.8.9 \
     beartype==0.15.0 \
     PyYAML==6.0 \
     natsort==8.2.0 \
     tqdm \
-    samplerate==0.2.3 \
+    rich \
+    requests \
+    aiohttp \
+    samplerate==0.1.0 \
     diffq==0.2.4
 
 # ------------------------------------------------------------------------------
@@ -255,9 +275,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy application code
 COPY --chown=uvr:uvr . /app/
 
-# Copy CLI wrapper scripts
+# Copy CLI wrapper scripts and set permissions
 COPY --chown=uvr:uvr docker/bin/ /usr/local/bin/
-RUN chmod +x /usr/local/bin/uvr-* 2>/dev/null || true
+RUN chmod +x /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr
 
 # Copy entrypoint
 COPY --chown=uvr:uvr docker/entrypoint.sh /entrypoint.sh
@@ -270,11 +290,20 @@ ENV UVR_MODELS_DIR=/models \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
+# Copy model metadata to a separate location (will be copied to volume on first run)
+RUN mkdir -p /app/models_data/VR_Models /app/models_data/MDX_Net_Models /app/models_data/Demucs_Models /app/models_data/Apollo_Models && \
+    (cp -r /app/models/VR_Models/model_data /app/models_data/VR_Models/ 2>/dev/null || true) && \
+    (cp -r /app/models/MDX_Net_Models/model_data /app/models_data/MDX_Net_Models/ 2>/dev/null || true) && \
+    (cp -r /app/models/Demucs_Models/model_data /app/models_data/Demucs_Models/ 2>/dev/null || true) && \
+    (cp -r /app/models/Apollo_Models/* /app/models_data/Apollo_Models/ 2>/dev/null || true)
+
 # Create symlinks for model directories
-RUN mkdir -p /app/models && \
-    ln -sf /models/VR_Models /app/models/VR_Models 2>/dev/null || true && \
-    ln -sf /models/MDX_Net_Models /app/models/MDX_Net_Models 2>/dev/null || true && \
-    ln -sf /models/Demucs_Models /app/models/Demucs_Models 2>/dev/null || true
+RUN rm -rf /app/models/VR_Models /app/models/MDX_Net_Models /app/models/Demucs_Models /app/models/Apollo_Models && \
+    ln -sf /models/VR_Models /app/models/VR_Models && \
+    ln -sf /models/MDX_Net_Models /app/models/MDX_Net_Models && \
+    ln -sf /models/Demucs_Models /app/models/Demucs_Models && \
+    ln -sf /models/Apollo_Models /app/models/Apollo_Models && \
+    chown -R uvr:uvr /app/models /app/models_data
 
 # Switch to non-root user
 USER uvr

@@ -193,8 +193,15 @@ for (`$i = 0; `$i -lt `$args.Count; `$i++) {
 }
 
 # Build docker command
-`$DockerArgs = @("run", "--rm", "-it")
-if ("$GpuFlags") {
+# Use -it only if running in a terminal
+`$IsInteractive = [Environment]::UserInteractive -and -not [Console]::IsInputRedirected
+if (`$IsInteractive) {
+    `$DockerArgs = @("run", "--rm", "-it")
+} else {
+    `$DockerArgs = @("run", "--rm")
+}
+`$GpuEnabled = "$($Target -eq 'gpu')"
+if (`$GpuEnabled -eq "True") {
     `$DockerArgs += "--gpus"
     `$DockerArgs += "all"
 }

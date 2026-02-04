@@ -46,43 +46,39 @@ detect_gpu() {
 setup_model_dirs() {
     local models_dir="${UVR_MODELS_DIR:-/models}"
     
-    # Create model subdirectories if they don't exist
+    # Create model subdirectories if they don't exist (in mounted volume)
+    # These operations may fail if volume not mounted with correct permissions
     mkdir -p "${models_dir}/VR_Models/model_data" 2>/dev/null || true
     mkdir -p "${models_dir}/MDX_Net_Models/model_data/mdx_c_configs" 2>/dev/null || true
     mkdir -p "${models_dir}/Demucs_Models/v3_v4_repo" 2>/dev/null || true
+    mkdir -p "${models_dir}/Demucs_Models/model_data" 2>/dev/null || true
     mkdir -p "${models_dir}/Apollo_Models/model_configs" 2>/dev/null || true
     
-    # Copy model metadata if not present (from app to models volume)
-    if [ -d /app/models ]; then
+    # Copy model metadata from app to models volume (first run only)
+    # Source files are in /app/models_data (copied during build, not symlinked)
+    if [ -d /app/models_data ]; then
         # VR model data
-        if [ -f /app/models/VR_Models/model_data/model_data.json ] && \
+        if [ -d /app/models_data/VR_Models/model_data ] && \
            [ ! -f "${models_dir}/VR_Models/model_data/model_data.json" ]; then
-            cp -r /app/models/VR_Models/model_data/* "${models_dir}/VR_Models/model_data/" 2>/dev/null || true
+            cp -r /app/models_data/VR_Models/model_data/* "${models_dir}/VR_Models/model_data/" 2>/dev/null || true
         fi
         
         # MDX model data
-        if [ -d /app/models/MDX_Net_Models/model_data ] && \
+        if [ -d /app/models_data/MDX_Net_Models/model_data ] && \
            [ ! -f "${models_dir}/MDX_Net_Models/model_data/model_data.json" ]; then
-            cp -r /app/models/MDX_Net_Models/model_data/* "${models_dir}/MDX_Net_Models/model_data/" 2>/dev/null || true
+            cp -r /app/models_data/MDX_Net_Models/model_data/* "${models_dir}/MDX_Net_Models/model_data/" 2>/dev/null || true
         fi
         
         # Demucs model data
-        if [ -f /app/models/Demucs_Models/model_data/model_name_mapper.json ] && \
+        if [ -d /app/models_data/Demucs_Models/model_data ] && \
            [ ! -f "${models_dir}/Demucs_Models/model_data/model_name_mapper.json" ]; then
-            mkdir -p "${models_dir}/Demucs_Models/model_data" 2>/dev/null || true
-            cp -r /app/models/Demucs_Models/model_data/* "${models_dir}/Demucs_Models/model_data/" 2>/dev/null || true
+            cp -r /app/models_data/Demucs_Models/model_data/* "${models_dir}/Demucs_Models/model_data/" 2>/dev/null || true
         fi
-    fi
-    
-    # Update symlinks in app directory to point to models volume
-    if [ -d /app/models ]; then
-        # Remove existing directories/symlinks and create new symlinks
-        for subdir in VR_Models MDX_Net_Models Demucs_Models Apollo_Models; do
-            if [ -d "${models_dir}/${subdir}" ]; then
-                rm -rf "/app/models/${subdir}" 2>/dev/null || true
-                ln -sf "${models_dir}/${subdir}" "/app/models/${subdir}" 2>/dev/null || true
-            fi
-        done
+        
+        # Apollo model data
+        if [ -d /app/models_data/Apollo_Models ]; then
+            cp -r /app/models_data/Apollo_Models/* "${models_dir}/Apollo_Models/" 2>/dev/null || true
+        fi
     fi
 }
 
