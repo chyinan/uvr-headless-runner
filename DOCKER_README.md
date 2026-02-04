@@ -253,6 +253,17 @@ UVR_MODELS_DIR=/path/to/models uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
 
 ## 🖥️ GPU Support
 
+> ⚠️ **Important Limitation**
+> 
+> The Docker version **does NOT support AMD DirectML**. DirectML is a Windows-only API and cannot run in Linux containers.
+> 
+> | GPU Platform | Native | Docker |
+> |--------------|--------|--------|
+> | NVIDIA CUDA | ✅ | ✅ |
+> | AMD DirectML | ✅ | ❌ Not supported |
+> 
+> If you need AMD GPU acceleration, please use the native installation method or wait for ROCm support.
+
 ### NVIDIA GPU Requirements
 
 - NVIDIA Driver 525.60.13+
