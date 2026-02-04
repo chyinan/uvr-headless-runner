@@ -91,6 +91,41 @@
 
 ---
 
+## 🤔 Why Choose This Over Other Separators?
+
+> Most CLI separators restrict you to a predefined list of models. As a power user, you need more.
+
+<table>
+<tr>
+<td width="33%" align="center">
+
+### 🎨 Full Custom Model Support
+
+Drop your `.pth` or `.ckpt` files and run.  
+**No hardcoded lists, no restrictions.**
+
+</td>
+<td width="33%" align="center">
+
+### 🖥️ Headless & Remote Ready
+
+Built for seamless integration into  
+**web services or automation scripts.**
+
+</td>
+<td width="33%" align="center">
+
+### 👥 By Users, For Users
+
+Designed by audio enthusiasts who  
+**prioritize flexibility over restriction.**
+
+</td>
+</tr>
+</table>
+
+---
+
 ## 📋 Requirements
 
 | Component | Requirement |
