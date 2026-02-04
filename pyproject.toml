@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "uvr-headless-runner"
+name = "ultimate-vocal-remover-gui"
 version = "1.0.0"
 description = "Headless runners for Ultimate Vocal Remover - MDX/Roformer/SCNet/Demucs"
 authors = ["UVR Headless Runner Contributors"]
@@ -11,9 +11,6 @@ package-mode = false
 python = "^3.9,<3.11"
 
 # Core dependencies
-torch = "^2.0"
-torchaudio = "^2.0"
-torchvision = "^0.15"
 numpy = "1.23.5"
 scipy = "1.9.3"
 librosa = "0.9.2"
@@ -23,21 +20,22 @@ resampy = "0.4.2"
 
 # Model dependencies
 pytorch-lightning = "2.0.0"
-einops = "0.6.0"
+einops = "^0.8.0"
 ml-collections = "0.1.1"
 omegaconf = "2.2.3"
 onnx = "*"
 onnx2pytorch = "*"
 
 # Roformer/SCNet specific
-rotary-embedding-torch = "^0.3"
-beartype = "^0.14"
-transformers = "^4.35"
+rotary-embedding-torch = "^0.8.0"
+beartype = "^0.15"
+# transformers = "^4.35"  # 可选，按需安装
 
 # Audio processing
 julius = "0.2.7"
 pydub = "0.25.1"
 pyrubberband = "0.3.0"
+samplerate = "^0.2.3"
 
 # Utilities
 PyYAML = "6.0"
@@ -46,6 +44,8 @@ tqdm = "*"
 
 # Optional - for ONNX GPU inference
 # Install manually: pip install onnxruntime-gpu
+diffq = "^0.2.4"
+onnxruntime = ">=1.14.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"

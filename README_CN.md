@@ -36,7 +36,7 @@
 
 <table>
 <tr>
-<td width="50%">
+<td width="33%">
 
 ### 🎸 MDX-Net 运行器
 - MDX-Net / MDX-C 模型
@@ -45,13 +45,22 @@
 - 支持 ONNX & PyTorch 格式
 
 </td>
-<td width="50%">
+<td width="33%">
 
 ### 🥁 Demucs 运行器
 - Demucs v1 / v2 / v3 / v4
 - **htdemucs** / **htdemucs_ft**
 - **6轨分离** (吉他、钢琴)
 - 模型自动下载
+
+</td>
+<td width="33%">
+
+### 🎤 VR 运行器
+- VR Architecture 模型
+- **VR 5.1** 模型支持
+- 窗口大小 / 激进度调节
+- TTA 和后处理
 
 </td>
 </tr>
@@ -181,6 +190,17 @@ python demucs_headless_runner.py --model htdemucs --input "song.flac" --output "
 python demucs_headless_runner.py --model htdemucs --input "song.flac" --output "output/" --gpu --stem Vocals --primary-only
 ```
 
+### VR Architecture
+
+```bash
+# 基本分离（模型在数据库中）
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" --gpu
+
+# 自定义模型（不在数据库中）
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" --gpu \
+    --param 4band_v3 --primary-stem Vocals
+```
+
 ---
 
 ## 🎛️ MDX-Net 运行器
@@ -287,6 +307,83 @@ python demucs_headless_runner.py \
 
 ---
 
+## 🎤 VR Architecture 运行器
+
+### 命令行参数
+
+| 参数 | 简写 | 默认值 | 说明 |
+|------|------|--------|------|
+| `--model` | `-m` | **必需** | 模型文件路径 (.pth) |
+| `--input` | `-i` | **必需** | 输入音频文件 |
+| `--output` | `-o` | **必需** | 输出目录 |
+| `--gpu` | | 自动 | 使用 NVIDIA CUDA |
+| `--directml` | | | 使用 AMD DirectML |
+| `--window-size` | | `512` | 窗口大小 (320/512/1024) |
+| `--aggression` | | `5` | 激进度设置 (0-50+) |
+| `--wav-type` | | `PCM_16` | 输出格式：PCM_16/24/32, FLOAT, DOUBLE |
+| `--primary-only` | | | 只输出 primary stem |
+| `--secondary-only` | | | 只输出 secondary stem |
+
+<details>
+<summary><b>📋 全部参数</b></summary>
+
+| 参数 | 说明 |
+|------|------|
+| `--name` `-n` | 输出文件名 |
+| `--param` | 模型参数名（如 4band_v3） |
+| `--primary-stem` | Primary stem 名称（Vocals/Instrumental） |
+| `--nout` | VR 5.1 nout 参数 |
+| `--nout-lstm` | VR 5.1 nout_lstm 参数 |
+| `--cpu` | 强制 CPU |
+| `--device` `-d` | GPU 设备 ID |
+| `--batch-size` | 批次大小（默认：1） |
+| `--tta` | 启用 Test-Time Augmentation |
+| `--post-process` | 启用后处理 |
+| `--post-process-threshold` | 后处理阈值（默认：0.2） |
+| `--high-end-process` | 启用高端镜像处理 |
+| `--list-params` | 列出可用的模型参数 |
+
+</details>
+
+### 模型参数
+
+当模型哈希不在数据库中时，需要手动提供参数：
+
+```bash
+# 列出可用参数
+python vr_headless_runner.py --list-params
+
+# 使用自定义参数
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" \
+    --param 4band_v3 --primary-stem Vocals
+
+# VR 5.1 模型指定 nout/nout_lstm
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" \
+    --param 4band_v3 --primary-stem Vocals --nout 48 --nout-lstm 128
+```
+
+### 使用示例
+
+```bash
+# 高质量 + TTA
+python vr_headless_runner.py \
+    -m "UVR-MDX-NET-Voc_FT.pth" \
+    -i "song.flac" -o "output/" \
+    --gpu --tta --window-size 1024
+
+# 高激进度分离
+python vr_headless_runner.py \
+    -m "model.pth" -i "song.flac" -o "output/" \
+    --gpu --aggression 15 --post-process
+
+# 24-bit 输出
+python vr_headless_runner.py \
+    -m "model.pth" -i "song.flac" -o "output/" \
+    --gpu --wav-type PCM_24
+```
+
+---
+
 ## 📁 输出结构
 
 ```
@@ -307,6 +404,7 @@ output/
 ```python
 from mdx_headless_runner import run_mdx_headless
 from demucs_headless_runner import run_demucs_headless
+from vr_headless_runner import run_vr_headless
 
 # MDX 分离
 run_mdx_headless(
@@ -329,6 +427,21 @@ run_demucs_headless(
     verbose=True
 )
 # 输出: output/song_(Vocals).wav
+
+# VR Architecture 分离
+run_vr_headless(
+    model_path='model.pth',
+    audio_file='song.wav',
+    export_path='output',
+    use_gpu=True,
+    window_size=512,
+    aggression_setting=5,
+    is_tta=False,
+    # 未知模型需手动指定参数:
+    # user_vr_model_param='4band_v3',
+    # user_primary_stem='Vocals'
+)
+# 输出: output/song_(Vocals).wav, output/song_(Instrumental).wav
 ```
 
 > 💡 **说明**: 函数会处理音频并保存到 `export_path`。结果请查看输出目录。
@@ -357,6 +470,25 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 默认位置：
 - **MDX**: `C:\Users\{user}\AppData\Local\Programs\Ultimate Vocal Remover\models\MDX_Net_Models\`
 - **Demucs**: 自动下载到 `~/.cache/torch/hub/`
+- **VR**: `C:\Users\{user}\AppData\Local\Programs\Ultimate Vocal Remover\models\VR_Models\`
+
+</details>
+
+<details>
+<summary><b>❌ VR 模型哈希未找到</b></summary>
+
+如果你的 VR 模型不在数据库中，需要手动指定参数：
+
+```bash
+# 列出可用参数
+python vr_headless_runner.py --list-params
+
+# 指定 param 和 primary stem
+python vr_headless_runner.py -m "model.pth" -i "song.wav" -o "output/" \
+    --param 4band_v3 --primary-stem Vocals
+```
+
+常用参数: `4band_v3`, `4band_v2`, `1band_sr44100_hl512`, `3band_44100`
 
 </details>
 
@@ -415,6 +547,14 @@ Copyright (c) 2026 UVR Headless Runner Contributors
 <p align="center">
   <a href="LICENSE">查看完整许可证</a>
 </p>
+
+---
+
+## 贡献与支持
+
+欢迎提交 **Pull Request** 和 **Issue**！无论是 bug 反馈、功能建议还是代码贡献，我们都非常感谢。
+
+如果你觉得这个项目对你有帮助，请给我们一个 **Star** ⭐，这是对我们最大的支持！
 
 ---
 

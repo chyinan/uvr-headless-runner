@@ -36,7 +36,7 @@
 
 <table>
 <tr>
-<td width="50%">
+<td width="33%">
 
 ### 🎸 MDX-Net Runner
 - MDX-Net / MDX-C models
@@ -45,13 +45,22 @@
 - ONNX & PyTorch checkpoints
 
 </td>
-<td width="50%">
+<td width="33%">
 
 ### 🥁 Demucs Runner
 - Demucs v1 / v2 / v3 / v4
 - **htdemucs** / **htdemucs_ft**
 - **6-stem separation** (Guitar, Piano)
 - Auto model download
+
+</td>
+<td width="33%">
+
+### 🎤 VR Runner
+- VR Architecture models
+- **VR 5.1** model support
+- Window size / Aggression tuning
+- TTA & Post-processing
 
 </td>
 </tr>
@@ -181,6 +190,17 @@ python demucs_headless_runner.py --model htdemucs --input "song.flac" --output "
 python demucs_headless_runner.py --model htdemucs --input "song.flac" --output "output/" --gpu --stem Vocals --primary-only
 ```
 
+### VR Architecture
+
+```bash
+# Basic separation (model in database)
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" --gpu
+
+# Custom model (not in database)
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" --gpu \
+    --param 4band_v3 --primary-stem Vocals
+```
+
 ---
 
 ## 🎛️ MDX-Net Runner
@@ -287,6 +307,83 @@ python demucs_headless_runner.py \
 
 ---
 
+## 🎤 VR Architecture Runner
+
+### Command Line Arguments
+
+| Argument | Short | Default | Description |
+|----------|-------|---------|-------------|
+| `--model` | `-m` | **Required** | Model file path (.pth) |
+| `--input` | `-i` | **Required** | Input audio file |
+| `--output` | `-o` | **Required** | Output directory |
+| `--gpu` | | Auto | Use NVIDIA CUDA |
+| `--directml` | | | Use AMD DirectML |
+| `--window-size` | | `512` | Window size (320/512/1024) |
+| `--aggression` | | `5` | Aggression setting (0-50+) |
+| `--wav-type` | | `PCM_16` | Output: PCM_16/24/32, FLOAT, DOUBLE |
+| `--primary-only` | | | Output primary stem only |
+| `--secondary-only` | | | Output secondary stem only |
+
+<details>
+<summary><b>📋 All Arguments</b></summary>
+
+| Argument | Description |
+|----------|-------------|
+| `--name` `-n` | Output filename base |
+| `--param` | Model param name (e.g., 4band_v3) |
+| `--primary-stem` | Primary stem name (Vocals/Instrumental) |
+| `--nout` | VR 5.1 nout parameter |
+| `--nout-lstm` | VR 5.1 nout_lstm parameter |
+| `--cpu` | Force CPU |
+| `--device` `-d` | GPU device ID |
+| `--batch-size` | Batch size (default: 1) |
+| `--tta` | Enable Test-Time Augmentation |
+| `--post-process` | Enable post-processing |
+| `--post-process-threshold` | Post-process threshold (default: 0.2) |
+| `--high-end-process` | Enable high-end mirroring |
+| `--list-params` | List available model params |
+
+</details>
+
+### Model Parameters
+
+When the model hash is not found in the database, you need to provide parameters manually:
+
+```bash
+# List available params
+python vr_headless_runner.py --list-params
+
+# Use custom params
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" \
+    --param 4band_v3 --primary-stem Vocals
+
+# VR 5.1 model with nout/nout_lstm
+python vr_headless_runner.py -m "model.pth" -i "song.flac" -o "output/" \
+    --param 4band_v3 --primary-stem Vocals --nout 48 --nout-lstm 128
+```
+
+### Examples
+
+```bash
+# High quality with TTA
+python vr_headless_runner.py \
+    -m "UVR-MDX-NET-Voc_FT.pth" \
+    -i "song.flac" -o "output/" \
+    --gpu --tta --window-size 1024
+
+# Aggressive separation
+python vr_headless_runner.py \
+    -m "model.pth" -i "song.flac" -o "output/" \
+    --gpu --aggression 15 --post-process
+
+# 24-bit output
+python vr_headless_runner.py \
+    -m "model.pth" -i "song.flac" -o "output/" \
+    --gpu --wav-type PCM_24
+```
+
+---
+
 ## 📁 Output Structure
 
 ```
@@ -307,6 +404,7 @@ output/
 ```python
 from mdx_headless_runner import run_mdx_headless
 from demucs_headless_runner import run_demucs_headless
+from vr_headless_runner import run_vr_headless
 
 # MDX separation
 run_mdx_headless(
@@ -329,6 +427,21 @@ run_demucs_headless(
     verbose=True
 )
 # Output: output/song_(Vocals).wav
+
+# VR Architecture separation
+run_vr_headless(
+    model_path='model.pth',
+    audio_file='song.wav',
+    export_path='output',
+    use_gpu=True,
+    window_size=512,
+    aggression_setting=5,
+    is_tta=False,
+    # For unknown models, provide params manually:
+    # user_vr_model_param='4band_v3',
+    # user_primary_stem='Vocals'
+)
+# Output: output/song_(Vocals).wav, output/song_(Instrumental).wav
 ```
 
 > 💡 **Note**: Functions process audio and save to `export_path`. Check output directory for results.
@@ -357,6 +470,25 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 Default locations:
 - **MDX**: `C:\Users\{user}\AppData\Local\Programs\Ultimate Vocal Remover\models\MDX_Net_Models\`
 - **Demucs**: Auto-downloaded to `~/.cache/torch/hub/`
+- **VR**: `C:\Users\{user}\AppData\Local\Programs\Ultimate Vocal Remover\models\VR_Models\`
+
+</details>
+
+<details>
+<summary><b>❌ VR model hash not found</b></summary>
+
+If your VR model isn't in the database, provide parameters manually:
+
+```bash
+# List available params
+python vr_headless_runner.py --list-params
+
+# Specify param and primary stem
+python vr_headless_runner.py -m "model.pth" -i "song.wav" -o "output/" \
+    --param 4band_v3 --primary-stem Vocals
+```
+
+Common params: `4band_v3`, `4band_v2`, `1band_sr44100_hl512`, `3band_44100`
 
 </details>
 
@@ -415,6 +547,14 @@ Copyright (c) 2026 UVR Headless Runner Contributors
 <p align="center">
   <a href="LICENSE">View Full License</a>
 </p>
+
+---
+
+## Contributing & Support
+
+**Pull Requests** and **Issues** are welcome! Whether it's bug reports, feature suggestions, or code contributions, we greatly appreciate them all.
+
+If you find this project helpful, please give us a **Star** ⭐ - it's the best support for us!
 
 ---
 
