@@ -250,12 +250,6 @@ uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 
 </details>
 
-### ✅ 验证安装
-
-```bash
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
-```
-
 ---
 
 ## 🎼 快速开始
