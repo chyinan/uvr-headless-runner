@@ -119,3 +119,6 @@ local_settings.py
 *.pem
 *.key
 secrets.json
+
+# Internal documentation (not for public)
+RELEASE_GUIDE.md
