@@ -82,7 +82,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install Python 3.9 and system dependencies for audio processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # Python 3.9
+    # Required GPG tooling for add-apt-repository to function correctly in minimal images
+    gnupg \
+    dirmngr \
+    ca-certificates \
+    # Python 3.9 related packages
     software-properties-common \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update && apt-get install -y --no-install-recommends \
@@ -111,6 +115,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
     git \
+    # Convert CRLF -> LF inside container if files were checked-out with CRLF
+    dos2unix \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
@@ -191,18 +197,20 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy application code
 COPY --chown=uvr:uvr . /app/
 
-# Copy CLI wrapper scripts and set permissions
+# Copy CLI wrapper scripts, normalize line endings and set permissions
 COPY --chown=uvr:uvr docker/bin/ /usr/local/bin/
-RUN chmod +x /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr
+RUN dos2unix /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr || true && \
+    chmod +x /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr
 
-# Copy entrypoint
+# Copy entrypoint, normalize line endings and set permissions
 COPY --chown=uvr:uvr docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN dos2unix /entrypoint.sh || true && chmod +x /entrypoint.sh
 
 # Environment variables
 ENV UVR_MODELS_DIR=/models \
     UVR_DEVICE=cpu \
-    NUMBA_CACHE_DIR=/tmp/numba_cache
+    NUMBA_CACHE_DIR=/tmp/numba_cache \
+    PYTHONWARNINGS="ignore::UserWarning:pkg_resources"
 
 # Copy model metadata to a separate location (will be copied to volume on first run)
 RUN mkdir -p /app/models_data/VR_Models /app/models_data/MDX_Net_Models /app/models_data/Demucs_Models /app/models_data/Apollo_Models && \
@@ -271,10 +279,18 @@ COPY docker/requirements-gpu-extra.txt /tmp/requirements-gpu-extra.txt
 # - cu128: CUDA 12.8, driver 560+
 # NOTE: PyTorch from pytorch.org doesn't have pre-computed hashes.
 # For maximum security, manually verify wheel checksums.
+ARG PYTORCH_VERSION=2.6.0
+ARG TORCHVISION_VERSION=0.21.0
+ARG TORCHAUDIO_VERSION=2.6.0
+
 RUN pip install \
-    torch==2.8.0 \
-    torchvision==0.23.0 \
-    torchaudio==2.8.0 \
+# PyTorch versions MUST align with official CUDA wheel index at:
+# https://download.pytorch.org/whl/
+# IMPORTANT: Not all PyTorch versions support all CUDA versions.
+# Always verify version combinations exist before building.
+    torch==${PYTORCH_VERSION} \
+    torchvision==${TORCHVISION_VERSION} \
+    torchaudio==${TORCHAUDIO_VERSION} \
     --index-url https://download.pytorch.org/whl/${CUDA_VERSION}
 
 # Install all other dependencies with MANDATORY hash verification
@@ -303,20 +319,22 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy application code
 COPY --chown=uvr:uvr . /app/
 
-# Copy CLI wrapper scripts and set permissions
+# Copy CLI wrapper scripts, normalize line endings and set permissions
 COPY --chown=uvr:uvr docker/bin/ /usr/local/bin/
-RUN chmod +x /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr
+RUN dos2unix /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr || true && \
+    chmod +x /usr/local/bin/uvr /usr/local/bin/uvr-mdx /usr/local/bin/uvr-demucs /usr/local/bin/uvr-vr
 
-# Copy entrypoint
+# Copy entrypoint, normalize line endings and set permissions
 COPY --chown=uvr:uvr docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN dos2unix /entrypoint.sh || true && chmod +x /entrypoint.sh
 
 # Environment variables
 ENV UVR_MODELS_DIR=/models \
     UVR_DEVICE=cuda \
     NUMBA_CACHE_DIR=/tmp/numba_cache \
     NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    PYTHONWARNINGS="ignore::UserWarning:pkg_resources"
 
 # Copy model metadata to a separate location (will be copied to volume on first run)
 RUN mkdir -p /app/models_data/VR_Models /app/models_data/MDX_Net_Models /app/models_data/Demucs_Models /app/models_data/Apollo_Models && \

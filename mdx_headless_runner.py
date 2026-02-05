@@ -19,6 +19,11 @@ Usage:
     python mdx_headless_runner.py --download "UVR-MDX-NET Inst HQ 3"
 """
 
+# Suppress deprecation warnings from librosa's pkg_resources usage
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
+warnings.filterwarnings("ignore", message=".*pkg_resources.*")
+
 import os
 import sys
 import json

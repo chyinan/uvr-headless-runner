@@ -1,3 +1,10 @@
+# Ensure shell scripts use LF line endings on checkout across platforms
+*.sh text eol=lf
+
+# Normalize Docker wrapper scripts and entrypoint (some have no .sh extension)
+docker/entrypoint.sh text eol=lf
+docker/bin/* text eol=lf
+
 # ==============================================================================
 # Git Attributes - Line Ending Configuration
 # ==============================================================================

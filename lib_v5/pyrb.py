@@ -1,7 +1,6 @@
 import os
 import subprocess
 import tempfile
-import six
 import numpy as np
 import soundfile as sf
 import sys
@@ -15,10 +14,8 @@ __all__ = ['time_stretch', 'pitch_shift']
 
 __RUBBERBAND_UTIL = os.path.join(BASE_PATH_RUB, 'rubberband')
 
-if six.PY2:
-    DEVNULL = open(os.devnull, 'w')
-else:
-    DEVNULL = subprocess.DEVNULL
+# Python 3 only - use native DEVNULL
+DEVNULL = subprocess.DEVNULL
 
 def __rubberband(y, sr, **kwargs):
 
@@ -37,7 +34,7 @@ def __rubberband(y, sr, **kwargs):
         # Execute rubberband
         arguments = [__RUBBERBAND_UTIL, '-q']
 
-        for key, value in six.iteritems(kwargs):
+        for key, value in kwargs.items():
             arguments.append(str(key))
             arguments.append(str(value))
 
@@ -53,10 +50,9 @@ def __rubberband(y, sr, **kwargs):
             y_out = np.squeeze(y_out)
 
     except OSError as exc:
-        six.raise_from(RuntimeError('Failed to execute rubberband. '
-                                    'Please verify that rubberband-cli '
-                                    'is installed.'),
-                       exc)
+        raise RuntimeError('Failed to execute rubberband. '
+                           'Please verify that rubberband-cli '
+                           'is installed.') from exc
 
     finally:
         # Remove temp files

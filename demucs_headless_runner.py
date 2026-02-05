@@ -20,6 +20,11 @@ Demucs Headless Runner
     python demucs_headless_runner.py --download "htdemucs_ft"
 """
 
+# Suppress deprecation warnings from librosa's pkg_resources usage
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="librosa")
+warnings.filterwarnings("ignore", message=".*pkg_resources.*")
+
 import os
 import sys
 import time
@@ -679,21 +684,21 @@ def main():
                 show_uninstalled_only=args.list_uninstalled
             )
             
-            label = "已安装" if args.list_installed else "未安装" if args.list_uninstalled else "可用"
-            print(f"\n{label}的 Demucs 模型:")
+            label = "Installed" if args.list_installed else "Uninstalled" if args.list_uninstalled else "Available"
+            print(f"\n{label} Demucs Models:")
             print("=" * 60)
             
             if not models:
-                print(f"  没有找到{label}的模型。")
+                print(f"  No {label.lower()} models found.")
             else:
                 for model in models:
                     status = "Y" if model['installed'] else "N"
                     print(f"  [{status}] {model['name']}")
-                print(f"\n总计: {len(models)} 个模型")
+                print(f"\nTotal: {len(models)} models")
             
             return 0
         except Exception as e:
-            print(f"列出模型时出错: {e}", file=sys.stderr)
+            print(f"Error listing models: {e}", file=sys.stderr)
             return 1
     
     if args.download:
