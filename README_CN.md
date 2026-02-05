@@ -202,7 +202,30 @@ python mdx_headless_runner.py -m model.ckpt -i song.wav -o output/ --directml
 </details>
 
 <details>
-<summary><b>🐳 方式三：Docker（生产环境推荐）</b></summary>
+<summary><b>🐳 方式三：Docker Hub（推荐 - 无需构建！）</b></summary>
+
+**最快捷的方式 - 直接拉取运行！**
+
+```bash
+# 从 Docker Hub 拉取预构建镜像
+docker pull chyinan/uvr-headless-runner:latest
+
+# 直接运行（GPU 模式）
+docker run --rm --gpus all \
+  -v ~/.uvr_models:/models \
+  -v $(pwd):/data \
+  chyinan/uvr-headless-runner:latest \
+  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /data/song.wav -o /data/output/
+
+# 直接运行（CPU 模式）
+docker run --rm \
+  -v ~/.uvr_models:/models \
+  -v $(pwd):/data \
+  chyinan/uvr-headless-runner:latest \
+  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /data/song.wav -o /data/output/ --cpu
+```
+
+**或安装 CLI 包装器获得原生体验：**
 
 ```bash
 # 一键安装（自动检测 GPU）
