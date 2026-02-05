@@ -97,9 +97,9 @@
 
 ---
 
-## 🤔 Why Choose This Over Other Separators?
+## 🤔 Why uvr-headless-runner?
 
-> Most CLI separators restrict you to a predefined list of models. As a power user, you need more.
+> Built for maximum flexibility. Load any custom model without waiting for upstream updates.
 
 <table>
 <tr>
@@ -107,8 +107,8 @@
 
 ### 🎨 Full Custom Model Support
 
-Drop your `.pth` or `.ckpt` files and run.  
-**No hardcoded lists, no restrictions.**
+Directly load any `.pth` or `.ckpt` file.  
+**Perfect for testing new finetunes or experimental models immediately.**
 
 </td>
 <td width="33%" align="center">
@@ -124,7 +124,7 @@ Built for seamless integration into
 ### 👥 By Users, For Users
 
 Designed by audio enthusiasts who  
-**prioritize flexibility over restriction.**
+**prioritize complete control and native UVR compatibility.**
 
 </td>
 </tr>
