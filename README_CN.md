@@ -201,6 +201,14 @@ python mdx_headless_runner.py -m model.ckpt -i song.wav -o output/ --directml
 
 </details>
 
+### ✅ 验证安装（仅限原生 Python 安装）
+
+```bash
+python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
+```
+
+> 💡 如果使用 Docker，请跳过此步骤 - 容器已包含所有依赖。
+
 <details>
 <summary><b>🐳 方式三：Docker Hub（推荐 - 无需构建！）</b></summary>
 

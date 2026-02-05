@@ -201,6 +201,14 @@ python mdx_headless_runner.py -m model.ckpt -i song.wav -o output/ --directml
 
 </details>
 
+### ✅ Verify Installation (Native Python Only)
+
+```bash
+python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
+```
+
+> 💡 Skip this if using Docker - the container includes all dependencies.
+
 <details>
 <summary><b>🐳 Option 3: Docker Hub (Recommended - No Build Required!)</b></summary>
 
@@ -241,12 +249,6 @@ uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 📖 **[Full Docker Guide →](DOCKER_README.md)**
 
 </details>
-
-### ✅ Verify Installation
-
-```bash
-python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"
-```
 
 ---
 
