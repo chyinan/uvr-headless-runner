@@ -47,7 +47,7 @@
 
 ```bash
 # MDX-Net/Roformer 分离
-uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 
 # Demucs 分离
 uvr-demucs -m htdemucs -i song.wav -o output/
@@ -56,7 +56,7 @@ uvr-demucs -m htdemucs -i song.wav -o output/
 uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 
 # 统一入口
-uvr mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 uvr demucs -m htdemucs -i song.wav -o output/
 uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 ```
@@ -103,10 +103,10 @@ docker build -t uvr-headless:cpu -f docker/Dockerfile --target cpu .
 cd docker
 
 # GPU 模式
-docker compose run --rm uvr uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+docker compose run --rm uvr uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 
 # CPU 模式
-docker compose --profile cpu run --rm uvr-cpu uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+docker compose --profile cpu run --rm uvr-cpu uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 ```
 
 ### 直接使用 Docker Run
@@ -118,7 +118,7 @@ docker run --rm -it --gpus all \
   -v $(pwd)/input:/input:ro \
   -v $(pwd)/output:/output \
   uvr-headless:gpu \
-  uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 
 # CPU 模式
 docker run --rm -it \
@@ -126,7 +126,7 @@ docker run --rm -it \
   -v $(pwd)/input:/input:ro \
   -v $(pwd)/output:/output \
   uvr-headless:cpu \
-  uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 ```
 
 ## 📚 命令参考
@@ -138,15 +138,15 @@ docker run --rm -it \
 uvr-mdx -m <模型名称> -i <输入文件> -o <输出目录>
 
 # 常用选项
-uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/ --gpu
+uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --gpu
 uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --vocals-only
 uvr-mdx -m "model.ckpt" --json config.yaml -i song.wav -o output/
 
 # 模型管理
 uvr-mdx --list              # 列出所有可用模型
 uvr-mdx --list-installed    # 列出已安装模型
-uvr-mdx --download "Kim Vocal 2"  # 下载模型
-uvr-mdx --model-info "Kim Vocal 2"  # 查看模型信息
+uvr-mdx --download "UVR-MDX-NET Inst HQ 3"  # 下载模型
+uvr-mdx --model-info "UVR-MDX-NET Inst HQ 3"  # 查看模型信息
 
 # 高级选项
 uvr-mdx -m <model> -i <input> -o <output> \
@@ -234,7 +234,7 @@ uvr help         # 显示帮助
 
 ```bash
 # 下载常用模型
-uvr-mdx --download "Kim Vocal 2"
+uvr-mdx --download "UVR-MDX-NET Inst HQ 3"
 uvr-mdx --download "UVR-MDX-NET Inst HQ 3"
 uvr-demucs --download "htdemucs"
 uvr-demucs --download "htdemucs_ft"
@@ -248,7 +248,7 @@ uvr-vr --download "UVR-De-Echo-Normal"
 export UVR_MODELS_DIR=/path/to/your/models
 
 # 或在运行时指定
-UVR_MODELS_DIR=/path/to/models uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+UVR_MODELS_DIR=/path/to/models uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 ```
 
 ## 🖥️ GPU 支持
@@ -316,7 +316,7 @@ curl -I https://github.com/TRvlvr/model_repo/releases
 
 # 手动下载并放入模型目录
 # 模型 URL 可通过 --model-info 查看
-uvr-mdx --model-info "Kim Vocal 2"
+uvr-mdx --model-info "UVR-MDX-NET Inst HQ 3"
 ```
 
 **3. 找不到命令**

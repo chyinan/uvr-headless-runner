@@ -210,7 +210,7 @@ python mdx_headless_runner.py -m model.ckpt -i song.wav -o output/ --directml
 .\docker\install.ps1     # Windows
 
 # 然后像原生命令一样使用
-uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 uvr-demucs -m htdemucs -i song.wav -o output/
 uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 ```

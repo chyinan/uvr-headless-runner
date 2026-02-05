@@ -317,7 +317,7 @@ function Install-UVR {
     Write-Host ""
     Write-Host "You can now use these commands:" -ForegroundColor Green
     Write-Host ""
-    Write-Host '  uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/'
+    Write-Host '  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/'
     Write-Host '  uvr-demucs -m htdemucs -i song.wav -o output/'
     Write-Host '  uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/'
     Write-Host ""

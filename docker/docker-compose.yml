@@ -5,11 +5,11 @@
 # Usage:
 #   # GPU mode (default)
 #   docker compose up -d
-#   docker compose run --rm uvr uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+#   docker compose run --rm uvr uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 #
 #   # CPU mode
 #   docker compose --profile cpu up -d
-#   docker compose run --rm uvr-cpu uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+#   docker compose run --rm uvr-cpu uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 #
 # ==============================================================================
 

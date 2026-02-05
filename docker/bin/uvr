@@ -5,7 +5,7 @@
 # Unified CLI that dispatches to the appropriate runner based on subcommand
 #
 # Usage:
-#   uvr mdx -m "Kim Vocal 2" -i input.wav -o output/
+#   uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i input.wav -o output/
 #   uvr demucs -m htdemucs -i input.wav -o output/
 #   uvr vr -m "UVR-De-Echo-Normal" -i input.wav -o output/
 #   uvr list [mdx|demucs|vr]
@@ -49,7 +49,7 @@ print_usage() {
     echo "  help      Show this help message"
     echo ""
     echo "Examples:"
-    echo "  uvr mdx -m \"Kim Vocal 2\" -i song.wav -o output/"
+    echo "  uvr mdx -m \"UVR-MDX-NET Inst HQ 3\" -i song.wav -o output/"
     echo "  uvr demucs -m htdemucs -i song.wav -o output/"
     echo "  uvr vr -m \"UVR-De-Echo-Normal\" -i song.wav -o output/"
     echo "  uvr list mdx"

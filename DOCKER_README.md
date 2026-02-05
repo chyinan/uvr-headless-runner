@@ -47,7 +47,7 @@ After installation, you can use UVR like native commands:
 
 ```bash
 # MDX-Net/Roformer separation
-uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 
 # Demucs separation
 uvr-demucs -m htdemucs -i song.wav -o output/
@@ -56,7 +56,7 @@ uvr-demucs -m htdemucs -i song.wav -o output/
 uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 
 # Unified entry point
-uvr mdx -m "Kim Vocal 2" -i song.wav -o output/
+uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 uvr demucs -m htdemucs -i song.wav -o output/
 uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 ```
@@ -103,10 +103,10 @@ docker build -t uvr-headless:cpu -f docker/Dockerfile --target cpu .
 cd docker
 
 # GPU mode
-docker compose run --rm uvr uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+docker compose run --rm uvr uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 
 # CPU mode
-docker compose --profile cpu run --rm uvr-cpu uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+docker compose --profile cpu run --rm uvr-cpu uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 ```
 
 ### Direct Docker Run
@@ -118,7 +118,7 @@ docker run --rm -it --gpus all \
   -v $(pwd)/input:/input:ro \
   -v $(pwd)/output:/output \
   uvr-headless:gpu \
-  uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 
 # CPU mode
 docker run --rm -it \
@@ -126,7 +126,7 @@ docker run --rm -it \
   -v $(pwd)/input:/input:ro \
   -v $(pwd)/output:/output \
   uvr-headless:cpu \
-  uvr-mdx -m "Kim Vocal 2" -i /input/song.wav -o /output/
+  uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i /input/song.wav -o /output/
 ```
 
 ## 📚 Command Reference
@@ -138,15 +138,15 @@ docker run --rm -it \
 uvr-mdx -m <model_name> -i <input_file> -o <output_dir>
 
 # Common options
-uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/ --gpu
+uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --gpu
 uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --vocals-only
 uvr-mdx -m "model.ckpt" --json config.yaml -i song.wav -o output/
 
 # Model management
 uvr-mdx --list              # List all available models
 uvr-mdx --list-installed    # List installed models
-uvr-mdx --download "Kim Vocal 2"  # Download a model
-uvr-mdx --model-info "Kim Vocal 2"  # Show model info
+uvr-mdx --download "UVR-MDX-NET Inst HQ 3"  # Download a model
+uvr-mdx --model-info "UVR-MDX-NET Inst HQ 3"  # Show model info
 
 # Advanced options
 uvr-mdx -m <model> -i <input> -o <output> \
@@ -234,7 +234,7 @@ Models are cached in `~/.uvr_models` by default:
 
 ```bash
 # Download commonly used models
-uvr-mdx --download "Kim Vocal 2"
+uvr-mdx --download "UVR-MDX-NET Inst HQ 3"
 uvr-mdx --download "UVR-MDX-NET Inst HQ 3"
 uvr-demucs --download "htdemucs"
 uvr-demucs --download "htdemucs_ft"
@@ -248,7 +248,7 @@ uvr-vr --download "UVR-De-Echo-Normal"
 export UVR_MODELS_DIR=/path/to/your/models
 
 # Or specify at runtime
-UVR_MODELS_DIR=/path/to/models uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+UVR_MODELS_DIR=/path/to/models uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 ```
 
 ## 🖥️ GPU Support
@@ -316,7 +316,7 @@ curl -I https://github.com/TRvlvr/model_repo/releases
 
 # Manually download and place in model directory
 # Model URL can be found via --model-info
-uvr-mdx --model-info "Kim Vocal 2"
+uvr-mdx --model-info "UVR-MDX-NET Inst HQ 3"
 ```
 
 **3. Command Not Found**

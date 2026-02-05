@@ -128,7 +128,7 @@ main() {
         echo "  uvr        - Unified CLI"
         echo ""
         echo "Examples:"
-        echo "  uvr-mdx -m \"Kim Vocal 2\" -i /input/song.wav -o /output/"
+        echo "  uvr-mdx -m \"UVR-MDX-NET Inst HQ 3\" -i /input/song.wav -o /output/"
         echo "  uvr-demucs -m htdemucs -i /input/song.wav -o /output/"
         echo "  uvr-vr -m \"UVR-De-Echo-Normal\" -i /input/song.wav -o /output/"
         echo ""

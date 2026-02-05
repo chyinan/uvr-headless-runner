@@ -7,7 +7,7 @@
 # Usage:
 #   uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i input.wav -o output/
 #   uvr-mdx --list
-#   uvr-mdx --download "Kim Vocal 2"
+#   uvr-mdx --download "UVR-MDX-NET Inst HQ 3"
 #
 # ==============================================================================
 

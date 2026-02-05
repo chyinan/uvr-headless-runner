@@ -3,7 +3,7 @@
 # UVR Headless Runner - Installation Script
 # ==============================================================================
 # This script installs native-style CLI wrappers so you can run:
-#   uvr-mdx -m "Kim Vocal 2" -i song.wav -o output/
+#   uvr-mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
 #   uvr-demucs -m htdemucs -i song.wav -o output/
 #   uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 #
@@ -330,7 +330,7 @@ install() {
     echo ""
     echo -e "${GREEN}You can now use these commands:${NC}"
     echo ""
-    echo "  uvr-mdx -m \"Kim Vocal 2\" -i song.wav -o output/"
+    echo "  uvr-mdx -m \"UVR-MDX-NET Inst HQ 3\" -i song.wav -o output/"
     echo "  uvr-demucs -m htdemucs -i song.wav -o output/"
     echo "  uvr-vr -m \"UVR-De-Echo-Normal\" -i song.wav -o output/"
     echo ""
