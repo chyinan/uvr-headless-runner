@@ -90,6 +90,8 @@ uvr demucs -m htdemucs -i song.wav -o output/
 uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 ```
 
+> 💡 **Native Python also supports the same commands!** After `pip install uvr-headless-runner`, the unified `uvr mdx` / `uvr demucs` / `uvr vr` commands work identically to the Docker version.
+
 ## 📦 Project Structure
 
 ```

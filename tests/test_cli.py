@@ -36,7 +36,7 @@ class TestCLIBasics:
         assert result == 0
 
     def test_version_command_returns_zero(self):
-        """'uvr version' 应该返回 0"""
+        """'uvr version' 应该返回 0 并输出 uvr-headless-runner"""
         sys.argv = ["uvr", "version"]
         result = main()
         assert result == 0

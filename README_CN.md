@@ -24,6 +24,9 @@
   <a href="https://github.com/chyinan/uvr-headless-runner">
     <img src="https://img.shields.io/badge/平台-Windows%20|%20Linux%20|%20macOS-lightgrey.svg" alt="Platform">
   </a>
+  <a href="https://pypi.org/project/uvr-headless-runner/">
+    <img src="https://img.shields.io/pypi/v/uvr-headless-runner.svg?color=blue" alt="PyPI">
+  </a>
 </p>
 
 <p align="center">
@@ -80,6 +83,8 @@
 <tr><td>🎚️ <b>位深控制</b></td><td>16/24/32-bit PCM，32/64-bit 浮点</td></tr>
 <tr><td>📥 <b>自动下载</b></td><td>官方 UVR 模型注册表 + 自动下载</td></tr>
 <tr><td>🛡️ <b>健壮错误处理</b></td><td>GPU 回退、重试、模糊匹配</td></tr>
+<tr><td>🔗 <b>统一 CLI</b></td><td><code>uvr mdx</code> / <code>uvr demucs</code> / <code>uvr vr</code> — 一条命令搞定</td></tr>
+<tr><td>📦 <b>PyPI 发布</b></td><td><code>pip install uvr-headless-runner</code> — 即装即用</td></tr>
 </table>
 
 ---
@@ -144,8 +149,32 @@
 
 ## 🔧 安装
 
+<details open>
+<summary><b>🚀 方式一：pip install 从 PyPI 安装（推荐）</b></summary>
+
+```bash
+# 从 PyPI 安装
+pip install uvr-headless-runner
+
+# GPU 支持 (NVIDIA)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# ONNX GPU（可选）
+pip install onnxruntime-gpu
+```
+
+安装后即可使用 **`uvr` 统一命令** — 无需克隆仓库！
+
+```bash
+uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
+uvr demucs -m htdemucs -i song.wav -o output/
+uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
+```
+
+</details>
+
 <details>
-<summary><b>📦 方式一：Poetry（推荐）</b></summary>
+<summary><b>📦 方式二：Poetry（从源码安装）</b></summary>
 
 ```bash
 # 克隆仓库
@@ -165,7 +194,7 @@ pip install onnxruntime-gpu
 </details>
 
 <details>
-<summary><b>📦 方式二：pip + venv</b></summary>
+<summary><b>📦 方式三：pip + venv（从源码安装）</b></summary>
 
 ```bash
 # 克隆仓库
@@ -210,7 +239,7 @@ python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {
 > 💡 如果使用 Docker，请跳过此步骤 - 容器已包含所有依赖。
 
 <details>
-<summary><b>🐳 方式三：Docker Hub（推荐 - 无需构建！）</b></summary>
+<summary><b>🐳 方式四：Docker Hub（无需构建！）</b></summary>
 
 **最快捷的方式 - 直接拉取运行！**
 
@@ -253,6 +282,32 @@ uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 ---
 
 ## 🎼 快速开始
+
+### 统一 CLI（pip install / Docker 均可用）
+
+通过 `pip install uvr-headless-runner` 或 Docker 安装后，即可使用**简短命令**：
+
+```bash
+# MDX-Net / Roformer 分离
+uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --gpu
+
+# Demucs 分离
+uvr demucs -m htdemucs -i song.wav -o output/ --gpu
+
+# VR Architecture 分离
+uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/ --gpu
+
+# 列出所有可用模型
+uvr list all
+
+# 下载模型
+uvr download "UVR-MDX-NET Inst HQ 3" --arch mdx
+
+# 查看系统信息
+uvr info
+```
+
+> 💡 也可以使用独立命令：`uvr-mdx`、`uvr-demucs`、`uvr-vr`
 
 ### MDX-Net / Roformer / SCNet
 

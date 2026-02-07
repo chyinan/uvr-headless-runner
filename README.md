@@ -24,6 +24,9 @@
   <a href="https://github.com/chyinan/uvr-headless-runner">
     <img src="https://img.shields.io/badge/platform-Windows%20|%20Linux%20|%20macOS-lightgrey.svg" alt="Platform">
   </a>
+  <a href="https://pypi.org/project/uvr-headless-runner/">
+    <img src="https://img.shields.io/pypi/v/uvr-headless-runner.svg?color=blue" alt="PyPI">
+  </a>
 </p>
 
 <p align="center">
@@ -80,6 +83,8 @@
 <tr><td>🎚️ <b>Bit Depth Control</b></td><td>16/24/32-bit PCM, 32/64-bit float</td></tr>
 <tr><td>📥 <b>Auto Download</b></td><td>Official UVR model registry with auto-download</td></tr>
 <tr><td>🛡️ <b>Robust Error Handling</b></td><td>GPU fallback, retry, fuzzy matching</td></tr>
+<tr><td>🔗 <b>Unified CLI</b></td><td><code>uvr mdx</code> / <code>uvr demucs</code> / <code>uvr vr</code> — one command for all</td></tr>
+<tr><td>📦 <b>PyPI Ready</b></td><td><code>pip install uvr-headless-runner</code> — instant setup</td></tr>
 </table>
 
 ---
@@ -144,8 +149,32 @@ Designed by audio enthusiasts who
 
 ## 🔧 Installation
 
+<details open>
+<summary><b>🚀 Option 1: pip install from PyPI (Recommended)</b></summary>
+
+```bash
+# Install from PyPI
+pip install uvr-headless-runner
+
+# GPU support (NVIDIA)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# ONNX GPU (optional)
+pip install onnxruntime-gpu
+```
+
+After installation, you get the **`uvr` unified CLI** — no need to clone the repo!
+
+```bash
+uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/
+uvr demucs -m htdemucs -i song.wav -o output/
+uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
+```
+
+</details>
+
 <details>
-<summary><b>📦 Option 1: Poetry (Recommended)</b></summary>
+<summary><b>📦 Option 2: Poetry (from source)</b></summary>
 
 ```bash
 # Clone repository
@@ -165,7 +194,7 @@ pip install onnxruntime-gpu
 </details>
 
 <details>
-<summary><b>📦 Option 2: pip + venv</b></summary>
+<summary><b>📦 Option 3: pip + venv (from source)</b></summary>
 
 ```bash
 # Clone repository
@@ -210,7 +239,7 @@ python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {
 > 💡 Skip this if using Docker - the container includes all dependencies.
 
 <details>
-<summary><b>🐳 Option 3: Docker Hub (Recommended - No Build Required!)</b></summary>
+<summary><b>🐳 Option 4: Docker Hub (No Build Required!)</b></summary>
 
 **Fastest way to get started - just pull and run!**
 
@@ -253,6 +282,32 @@ uvr-vr -m "UVR-De-Echo-Normal" -i song.wav -o output/
 ---
 
 ## 🎼 Quick Start
+
+### Unified CLI (pip install / Docker)
+
+After installing via `pip install uvr-headless-runner` or Docker, you can use the **short commands**:
+
+```bash
+# MDX-Net / Roformer separation
+uvr mdx -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --gpu
+
+# Demucs separation
+uvr demucs -m htdemucs -i song.wav -o output/ --gpu
+
+# VR Architecture separation
+uvr vr -m "UVR-De-Echo-Normal" -i song.wav -o output/ --gpu
+
+# List all available models
+uvr list all
+
+# Download a model
+uvr download "UVR-MDX-NET Inst HQ 3" --arch mdx
+
+# Show system info
+uvr info
+```
+
+> 💡 You can also use standalone commands: `uvr-mdx`, `uvr-demucs`, `uvr-vr`
 
 ### MDX-Net / Roformer / SCNet
 

@@ -199,7 +199,7 @@ case "${COMMAND}" in
         print_usage
         ;;
     version|--version|-v)
-        echo "uvr version ${VERSION}"
+        echo "uvr-headless-runner ${VERSION}"
         ;;
     *)
         echo -e "${RED}Error: Unknown command '${COMMAND}'${NC}"

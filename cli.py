@@ -22,7 +22,7 @@ This module is the entry point registered as `uvr` in pyproject.toml:
 import os
 import sys
 
-VERSION = "1.0.3"
+VERSION = "1.1.0"
 
 
 def _run_runner(module_name, suppress_errors=False):
@@ -274,7 +274,7 @@ def main():
         return 0
 
     elif command in ("version", "--version", "-v"):
-        print(f"uvr version {VERSION}")
+        print(f"uvr-headless-runner {VERSION}")
         return 0
 
     else:
