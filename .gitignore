@@ -122,3 +122,4 @@ secrets.json
 
 # Internal documentation (not for public)
 RELEASE_GUIDE.md
+BUGFIX_LOG.md

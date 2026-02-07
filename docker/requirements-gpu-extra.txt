@@ -10,6 +10,8 @@
 # =============================================================================
 
 # GPU ONNX Runtime - replaces onnxruntime==1.16.3 from main requirements
+# Upgraded from 1.16.3 to 1.19.2 for CUDA 12.x compatibility
+# (1.16.3 only supports CUDA 11.x, causing CUDAExecutionProvider init failure)
 # Hashes fetched from PyPI for Linux x86_64 cp39
-onnxruntime-gpu==1.16.3 \
-    --hash=sha256:9305c7fc5981d7e04ad2afef1a403475fb84d658898567c91aa5a41c20ead356
+onnxruntime-gpu==1.19.2 \
+    --hash=sha256:c9e369f01f55ea726ae5d28f18236426e52e97c433f0b7682054e61c478a06c9

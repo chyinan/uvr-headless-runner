@@ -974,33 +974,62 @@ DOCKER_ARGS=()
 MOUNT_ARGS=()
 PROCESSED_ARGS=()
 
-# Track mounted directories to avoid duplicates
-# FIX: Always use string-based tracking instead of associative arrays.
-# The old code used `declare -A MOUNTED_DIRS` on Bash 4+, but then
-# add_mount() assigned a string to the associative array variable
-# (MOUNTED_DIRS="${MOUNTED_DIRS}|dir|") which causes an error in Bash 4.3+:
-# "cannot convert associative array to scalar". Using a plain string
-# approach works identically on all Bash versions (3.x through 5.x).
-MOUNTED_DIRS=""
+# Track mounted directories with their modes using parallel indexed arrays.
+# FIX (mount-mode upgrade): The old code only tracked whether a directory was
+# mounted, not its mode.  If -i (ro) was processed before -o (rw) and both
+# resolved to the SAME directory (e.g. input file lives in the output dir),
+# the directory was mounted as :ro and the -o handler silently skipped it.
+# This caused "No write permission for output directory" inside the container.
+#
+# New approach: three parallel arrays store host dir, container dir, and mode.
+# _track_mount() allows upgrading ro→rw.  After all arguments are parsed,
+# MOUNT_ARGS is rebuilt from these arrays with the final (correct) modes.
+#
+# Uses indexed arrays (Bash 2+) — no associative arrays needed.
+_MOUNT_HOST_DIRS=()
+_MOUNT_CONTAINER_DIRS=()
+_MOUNT_MODES=()
 
-# Function to check if directory is already mounted (all Bash versions)
-is_mounted() {
+# Track the output directory's container-side path for pre-flight write test.
+# Set when -o/--output is parsed; used before exec to verify writability.
+_OUTPUT_DOCKER_DIR=""
+
+# Find index of a tracked directory; prints index or -1.
+_find_mount_index() {
     local dir="$1"
-    if [ -n "${MOUNTED_DIRS}" ]; then
-        echo "${MOUNTED_DIRS}" | grep -q "|${dir}|" && return 0
-    fi
+    local i
+    for i in "${!_MOUNT_HOST_DIRS[@]}"; do
+        if [ "${_MOUNT_HOST_DIRS[$i]}" = "$dir" ]; then
+            echo "$i"
+            return 0
+        fi
+    done
+    echo "-1"
     return 1
 }
 
-add_mount() {
+# Add a new mount or upgrade an existing ro mount to rw.
+_track_mount() {
     local dir="$1"
-    MOUNTED_DIRS="${MOUNTED_DIRS}|${dir}|"
+    local mode="$2"  # "ro" or "rw"
+    local idx
+    idx="$(_find_mount_index "$dir")" || true
+    if [ "$idx" -ge 0 ]; then
+        # Already tracked — upgrade ro→rw if needed (rw is superset of ro)
+        if [ "${_MOUNT_MODES[$idx]}" = "ro" ] && [ "$mode" = "rw" ]; then
+            _MOUNT_MODES[$idx]="rw"
+        fi
+    else
+        _MOUNT_HOST_DIRS+=("$dir")
+        _MOUNT_CONTAINER_DIRS+=("$dir")
+        _MOUNT_MODES+=("$mode")
+    fi
 }
 
 # FIX: process_path stores its result in _RESOLVED_PATH (global variable)
 # instead of echoing it. This avoids calling it inside $() command
 # substitution, which creates a subshell where all side effects
-# (MOUNT_ARGS, MOUNTED_DIRS modifications) would be silently lost.
+# (_MOUNT_HOST_DIRS, _MOUNT_MODES modifications) would be silently lost.
 # The old code called: PROCESSED_ARGS+=("$(process_path "$1" "ro")")
 # which meant MOUNT_ARGS was ALWAYS empty — no directories were ever
 # mounted into the container, breaking all input/output file access.
@@ -1039,10 +1068,9 @@ process_path() {
         mkdir -p "$dir" 2>/dev/null || true
     fi
     
-    # Add mount if not already mounted and directory exists
-    if ! is_mounted "$dir" && [ -d "$dir" ]; then
-        add_mount "$dir"
-        MOUNT_ARGS+=("-v" "${dir}:${dir}:${mode}")
+    # Track mount (add or upgrade ro→rw) if directory exists
+    if [ -d "$dir" ]; then
+        _track_mount "$dir" "$mode"
     fi
     
     _RESOLVED_PATH="$abs_path"
@@ -1066,6 +1094,8 @@ while [[ $# -gt 0 ]]; do
             if [[ $# -gt 0 ]]; then
                 process_path "$1" "rw"
                 PROCESSED_ARGS+=("${_RESOLVED_PATH}")
+                # Remember output dir for pre-flight write test
+                _OUTPUT_DOCKER_DIR="${_RESOLVED_PATH}"
                 shift
             fi
             ;;
@@ -1074,6 +1104,14 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
     esac
+done
+
+# Build MOUNT_ARGS from tracked directories (final modes applied).
+# This MUST happen after the argument-parsing loop so that any ro→rw
+# upgrades (e.g. same dir used for both -i and -o) are already resolved.
+MOUNT_ARGS=()
+for _mi in "${!_MOUNT_HOST_DIRS[@]}"; do
+    MOUNT_ARGS+=("-v" "${_MOUNT_HOST_DIRS[$_mi]}:${_MOUNT_CONTAINER_DIRS[$_mi]}:${_MOUNT_MODES[$_mi]}")
 done
 
 # Build docker run command
@@ -1150,6 +1188,32 @@ DOCKER_CMD+=("${PROCESSED_ARGS[@]}")
 # Debug mode (proxy vars are intentionally excluded from debug output for security)
 if [ -n "${UVR_DEBUG}" ]; then
     echo "Docker command: ${DOCKER_CMD[*]}" >&2
+fi
+
+# ── Pre-flight: verify output directory is writable inside container ──
+# Spins up a throw-away container with the SAME volume mounts and attempts a
+# test write.  This catches mount-mode mistakes (:ro vs :rw), host permission
+# issues, and SELinux/AppArmor blocks BEFORE PyTorch and models are loaded —
+# saving minutes of wasted startup time.
+if [ -n "${_OUTPUT_DOCKER_DIR}" ]; then
+    _WRITE_TEST="${_OUTPUT_DOCKER_DIR}/.uvr_write_test_$$"
+    if ! docker run --rm \
+            "${MOUNT_ARGS[@]}" \
+            --entrypoint sh \
+            "${IMAGE}" \
+            -c "touch '${_WRITE_TEST}' && rm -f '${_WRITE_TEST}'" 2>/dev/null; then
+        echo "" >&2
+        echo "ERROR: Output directory is not writable inside the container:" >&2
+        echo "  ${_OUTPUT_DOCKER_DIR}" >&2
+        echo "" >&2
+        echo "Possible causes:" >&2
+        echo "  1. Volume mounted as read-only (:ro instead of :rw)" >&2
+        echo "  2. Host directory permissions do not allow Docker to write" >&2
+        echo "  3. SELinux/AppArmor blocking container writes (try :z suffix)" >&2
+        echo "" >&2
+        echo "Tip: re-run with UVR_DEBUG=1 to see the full docker command." >&2
+        exit 1
+    fi
 fi
 
 # Run container

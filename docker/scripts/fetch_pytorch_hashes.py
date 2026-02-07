@@ -37,7 +37,7 @@ EXTRA_PACKAGES = [
     ('markdown-it-py', '3.0.0'),  # rich dependency
     ('mdurl', '0.1.2'),  # markdown-it-py dependency
     ('pygments', '2.18.0'),  # rich dependency
-    ('onnxruntime-gpu', '1.16.3'),  # GPU ONNX runtime
+    ('onnxruntime-gpu', '1.19.2'),  # GPU ONNX runtime (CUDA 12.x)
 ]
 
 # PyPI API for package info

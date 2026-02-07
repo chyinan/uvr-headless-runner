@@ -298,9 +298,10 @@ RUN pip install \
 # This prevents MITM attacks, compromised mirrors, and malicious uploads.
 RUN pip install --require-hashes --no-deps -r /tmp/requirements-hashed.txt
 
-# Replace CPU onnxruntime with GPU version
+# Replace CPU onnxruntime with GPU version (onnxruntime-gpu 1.19.2, CUDA 12.x)
 # SECURITY: GPU extra packages are also hash-verified.
 # onnxruntime-gpu provides CUDA acceleration for ONNX model inference.
+# NOTE: Must use >=1.17 for CUDA 12.x compatibility (1.16.x only supports CUDA 11.x)
 RUN pip uninstall -y onnxruntime && \
     pip install --require-hashes --no-deps -r /tmp/requirements-gpu-extra.txt
 

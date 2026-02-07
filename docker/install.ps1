@@ -1089,9 +1089,23 @@ if (-not (Test-Path `$ModelsDir)) {
 `$ModelsDockerPath = Convert-ToDockerPath `$ModelsDir
 
 # Process arguments for path mounting
-`$MountArgs = @()
+# FIX (mount-mode upgrade): The old code stored `$true in `$MountedDirs and
+# built `$MountArgs incrementally.  If -i (ro) was processed before -o (rw)
+# and both resolved to the SAME directory (e.g. input file lives in the
+# output dir), the directory was already in `$MountedDirs so the -o handler
+# skipped it — leaving it mounted as :ro.  This caused the container error:
+#   "No write permission for output directory"
+#
+# New approach: `$MountedDirs stores @{DockerDir; Mode} per host directory.
+# When output requests :rw for a dir already tracked as :ro, the mode is
+# upgraded.  `$MountArgs is built ONCE after all arguments are parsed,
+# ensuring the final (correct) mode is used for each mount.
 `$ProcessedArgs = @()
-`$MountedDirs = @{}
+`$MountedDirs = @{}  # key=hostDir, value=@{DockerDir=...; Mode="ro"|"rw"}
+
+# Track the output directory's container-side path for pre-flight write test.
+# Set when -o/--output is parsed; used before exec to verify writability.
+`$OutputDockerDir = ""
 
 for (`$i = 0; `$i -lt `$args.Count; `$i++) {
     `$arg = `$args[`$i]
@@ -1110,10 +1124,10 @@ for (`$i = 0; `$i -lt `$args.Count; `$i++) {
                 `$dockerDir = Convert-ToDockerPath `$dir
                 
                 if (-not `$MountedDirs.ContainsKey(`$dir)) {
-                    `$MountedDirs[`$dir] = `$true
-                    `$MountArgs += "-v"
-                    `$MountArgs += "`$(`$dir):`$(`$dockerDir):ro"
+                    `$MountedDirs[`$dir] = @{ DockerDir = `$dockerDir; Mode = "ro" }
                 }
+                # If already mounted (even as rw by a prior -o), no change needed;
+                # rw is a superset of ro.
                 `$ProcessedArgs += `$dockerPath
             } else {
                 Write-Warning "Input file not found: `$path"
@@ -1140,12 +1154,15 @@ for (`$i = 0; `$i -lt `$args.Count; `$i++) {
                 `$absPath = (Resolve-Path `$path).Path
                 `$dockerPath = Convert-ToDockerPath `$absPath
                 
-                if (-not `$MountedDirs.ContainsKey(`$absPath)) {
-                    `$MountedDirs[`$absPath] = `$true
-                    `$MountArgs += "-v"
-                    `$MountArgs += "`$(`$absPath):`$(`$dockerPath):rw"
+                if (`$MountedDirs.ContainsKey(`$absPath)) {
+                    # CRITICAL: Upgrade ro -> rw so output directory is writable
+                    `$MountedDirs[`$absPath].Mode = "rw"
+                } else {
+                    `$MountedDirs[`$absPath] = @{ DockerDir = `$dockerPath; Mode = "rw" }
                 }
                 `$ProcessedArgs += `$dockerPath
+                # Remember output dir for pre-flight write test
+                `$OutputDockerDir = `$dockerPath
             } else {
                 `$ProcessedArgs += `$path
             }
@@ -1154,6 +1171,15 @@ for (`$i = 0; `$i -lt `$args.Count; `$i++) {
     else {
         `$ProcessedArgs += `$arg
     }
+}
+
+# Build mount args from tracked directories (final pass ensures correct modes).
+# This MUST happen after the argument-parsing loop so that any ro->rw
+# upgrades (e.g. same dir used for both -i and -o) are already resolved.
+`$MountArgs = @()
+foreach (`$entry in `$MountedDirs.GetEnumerator()) {
+    `$MountArgs += "-v"
+    `$MountArgs += "`$(`$entry.Key):`$(`$entry.Value.DockerDir):`$(`$entry.Value.Mode)"
 }
 
 # Rewrite localhost proxy addresses for Docker container access.
@@ -1225,6 +1251,30 @@ if (`$env:all_proxy) { `$DockerArgs += "-e"; `$DockerArgs += "all_proxy=`$(Rewri
 # Show command in verbose mode (proxy vars intentionally excluded for security)
 if (`$env:UVR_DEBUG) {
     Write-Host "Docker command: docker `$(`$DockerArgs -join ' ')" -ForegroundColor Gray
+}
+
+# ── Pre-flight: verify output directory is writable inside container ──
+# Spins up a throw-away container with the SAME volume mounts and attempts a
+# test write.  This catches mount-mode mistakes (:ro vs :rw), host permission
+# issues, and Docker Desktop file-sharing blocks BEFORE PyTorch and models are
+# loaded — saving minutes of wasted startup time.
+if (`$OutputDockerDir) {
+    `$WriteTest = "`$OutputDockerDir/.uvr_write_test_`$PID"
+    `$TestArgs = @("run", "--rm") + `$MountArgs + @("--entrypoint", "sh", `$Image, "-c", "touch '`$WriteTest' && rm -f '`$WriteTest'")
+    & docker @TestArgs 2>`$null
+    if (`$LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "ERROR: Output directory is not writable inside the container:" -ForegroundColor Red
+        Write-Host "  `$OutputDockerDir" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "Possible causes:" -ForegroundColor Yellow
+        Write-Host "  1. Volume mounted as read-only (:ro instead of :rw)"
+        Write-Host "  2. Host directory permissions do not allow Docker to write"
+        Write-Host "  3. Docker Desktop file sharing not configured for this drive"
+        Write-Host ""
+        Write-Host "Tip: set env UVR_DEBUG=1 to see the full docker command." -ForegroundColor Gray
+        exit 1
+    }
 }
 
 # Execute docker
