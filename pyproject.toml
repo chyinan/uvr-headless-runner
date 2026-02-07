@@ -55,5 +55,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-mdx-runner = "mdx_headless_runner:main"
-demucs-runner = "demucs_headless_runner:main"
+uvr = "cli:main"
+uvr-mdx = "mdx_headless_runner:main"
+uvr-demucs = "demucs_headless_runner:main"
+uvr-vr = "vr_headless_runner:main"
