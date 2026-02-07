@@ -1,11 +1,55 @@
 [tool.poetry]
-name = "ultimate-vocal-remover-gui"
-version = "1.0.3"
-description = "Headless runners for Ultimate Vocal Remover - MDX/Roformer/SCNet/Demucs"
+name = "uvr-headless-runner"
+version = "1.1.0"
+description = "CLI audio source separation powered by Ultimate Vocal Remover — separate vocals, instruments, drums from any audio"
 authors = ["UVR Headless Runner Contributors"]
 readme = "README.md"
 license = "MIT"
-package-mode = false
+homepage = "https://github.com/chyinan/uvr-headless-runner"
+repository = "https://github.com/chyinan/uvr-headless-runner"
+keywords = [
+    "audio", "vocal-remover", "source-separation", "uvr",
+    "demucs", "mdx-net", "roformer", "music", "cli"
+]
+classifiers = [
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+]
+
+# Include root-level modules and sub-packages
+packages = [
+    # CLI and runners
+    {include = "cli.py"},
+    {include = "mdx_headless_runner.py"},
+    {include = "demucs_headless_runner.py"},
+    {include = "vr_headless_runner.py"},
+    # Shared modules
+    {include = "model_downloader.py"},
+    {include = "error_handler.py"},
+    {include = "progress.py"},
+    {include = "separate.py"},
+    {include = "UVR.py"},
+    {include = "__version__.py"},
+    # Sub-packages (upstream UVR code)
+    {include = "demucs"},
+    {include = "lib_v5"},
+    {include = "gui_data"},
+]
+
+# Include non-Python data files
+include = [
+    "models/**/*.json",
+    "models/**/*.yaml",
+    "models/**/*.txt",
+    "lib_v5/**/*.json",
+    "lib_v5/**/*.ckpt",
+    "gui_data/**/*.json",
+    "gui_data/**/*.txt",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.11"
@@ -41,6 +85,8 @@ samplerate = "^0.2.3"
 PyYAML = "6.0"
 natsort = "8.2.0"
 tqdm = "*"
+requests = ">=2.28"
+rich = ">=13.0"
 
 # Optional - for ONNX GPU inference
 # Install manually: pip install onnxruntime-gpu
