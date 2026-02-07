@@ -1,0 +1,89 @@
+name: 🐛 Bug Report
+description: 报告一个 Bug / Report a bug
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你提交 Bug 报告！请尽量填写以下信息，以便我们快速定位问题。
+        Thanks for filing a bug report! Please fill in as much info as you can.
+
+  - type: dropdown
+    id: runner
+    attributes:
+      label: Runner / 架构
+      description: 使用的 Runner 类型
+      options:
+        - uvr-mdx (MDX-Net / Roformer / SCNet)
+        - uvr-demucs (Demucs)
+        - uvr-vr (VR Architecture)
+        - Docker / install script
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation Method / 安装方式
+      options:
+        - pip + venv
+        - Poetry
+        - Docker (docker run)
+        - Docker (install.sh / install.ps1 wrapper)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description / 问题描述
+      description: 清晰描述你遇到了什么问题
+      placeholder: 当我运行 ... 时，出现了 ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command / 完整命令
+      description: 你运行的完整命令（隐去隐私路径即可）
+      render: bash
+      placeholder: |
+        python mdx_headless_runner.py -m "UVR-MDX-NET Inst HQ 3" -i song.wav -o output/ --gpu
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Output / 错误输出
+      description: 完整的错误信息（复制终端输出）
+      render: text
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 环境信息
+      description: |
+        请提供以下信息（运行 `uvr info` 或手动填写）：
+      value: |
+        - OS: [e.g. Windows 11, Ubuntu 22.04, macOS 14]
+        - Python: [e.g. 3.9.18]
+        - PyTorch: [e.g. 2.8.0+cu124]
+        - GPU: [e.g. RTX 4090, AMD RX 7900 XT, None (CPU)]
+        - Docker: [e.g. 25.0.3, N/A]
+    validations:
+      required: true
+
+  - type: textarea
+    id: model
+    attributes:
+      label: Model / 模型信息
+      description: 使用的模型名称或路径
+      placeholder: "UVR-MDX-NET Inst HQ 3 或 /path/to/custom_model.ckpt"
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context / 补充信息
+      description: 其他可能有帮助的信息（截图、日志文件等）
