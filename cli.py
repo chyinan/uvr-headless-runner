@@ -166,7 +166,7 @@ def print_info():
 
 def cmd_list(args):
     """Handle 'uvr list' subcommand."""
-    arch = args[0] if args else "all"
+    arch = args[0].lower() if args else "all"
 
     if arch == "mdx":
         sys.argv = ["uvr-mdx", "--list"]
@@ -213,7 +213,7 @@ def cmd_download(args):
     i = 0
     while i < len(rest_args):
         if rest_args[i] in ("--arch", "-a") and i + 1 < len(rest_args):
-            arch = rest_args[i + 1]
+            arch = rest_args[i + 1].lower()
             i += 2
         else:
             i += 1
@@ -244,7 +244,7 @@ def main():
         print_usage()
         return 0
 
-    command = sys.argv[1]
+    command = sys.argv[1].lower()
     remaining_args = sys.argv[2:]
 
     if command == "mdx":
