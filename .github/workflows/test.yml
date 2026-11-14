@@ -29,9 +29,21 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install system dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libsndfile1 \
+            libsamplerate0 \
+            libsamplerate0-dev \
+            ffmpeg \
+            rubberband-cli \
+            librubberband-dev
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
           pip install pytest
           pip install numpy scipy librosa soundfile audioread resampy
           pip install pytorch-lightning einops ml-collections omegaconf
