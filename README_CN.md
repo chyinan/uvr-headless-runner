@@ -33,6 +33,14 @@
   <strong>🇨🇳 中文</strong> | <a href="README.md">🇬🇧 English</a> | <a href="DOCKER_README_CN.md">🐳 Docker</a>
 </p>
 
+<p align="center">
+  <a href="AGENT_WEBUI.md"><strong>🌐 网页工作台（WebUI）</strong></a> — 基于浏览器的音频分离界面，支持任务队列、试听与 Agent 助手
+</p>
+
+<p align="center">
+  <img src="screenshot.png" alt="UVR Headless Runner WebUI 截图" width="100%">
+</p>
+
 ---
 
 ## ✨ 功能特性
@@ -86,6 +94,28 @@
 <tr><td>🔗 <b>统一 CLI</b></td><td><code>uvr mdx</code> / <code>uvr demucs</code> / <code>uvr vr</code> — 一条命令搞定</td></tr>
 <tr><td>📦 <b>PyPI 发布</b></td><td><code>pip install uvr-headless-runner</code> — 即装即用</td></tr>
 </table>
+
+---
+
+## 🌐 WebUI（agent-webui 分支）
+
+本分支在现有 CLI 运行器之上增加了本地的**网页工作台与单 Agent** 层。网页与 Agent 共用同一套任务服务；音频分离仍由原有 Runner 完成。
+
+**主要能力**
+
+- **浏览器工作台** — 上传音频、管理任务并在 `http://127.0.0.1:8787` 监控分离进度。
+- **试听优先流程** — 先生成短片段试听（通常为前 30 秒），满意后再处理整首；也可直接开始整首处理。
+- **批量处理** — 勾选已上传任务，将当前方案应用到多个文件；每首歌独立任务与产物，推理串行执行。
+- **模型库与下载** — 浏览官方模型、筛选已安装/未安装模型，并在不占用推理槽的情况下触发下载。
+- **硬件状态面板** — 在页面中实时查看 GPU/显存/CPU/内存等状态（可用时）。
+- **Agent 助手** — 通过 OpenAI 兼容接口进行对话控制（可选）；未配置 API Key 时手动操作仍可用。
+- **可调预设** — 音质相关预设与参数（如 MDX overlap、VR aggression、Demucs shifts）定义在 `agent_web/presets.json`。
+
+**安装与使用**
+
+环境搭建（控制服务独立 Python 环境、推理环境、前端构建）、配置、启动与当前验收记录请参见 **[AGENT_WEBUI.md](AGENT_WEBUI.md)**。
+
+> **说明：** Demucs 没有单独的伴奏轨，制作伴奏请使用 MDX Inst 类模型。试听与整首使用同一套参数，但短片段与全曲上下文不同，听感不保证完全一致。服务重启后，运行中的任务会标记为中断，排队任务会暂停，需要手动继续。
 
 ---
 
