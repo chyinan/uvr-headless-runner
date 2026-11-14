@@ -33,6 +33,14 @@
   <a href="README_CN.md">🇨🇳 中文</a> | <strong>🇬🇧 English</strong> | <a href="DOCKER_README.md">🐳 Docker</a>
 </p>
 
+<p align="center">
+  <a href="AGENT_WEBUI.md"><strong>🌐 WebUI Workbench</strong></a> — browser-based audio separation with task queue, previews, and an agent assistant
+</p>
+
+<p align="center">
+  <img src="screenshot.png" alt="UVR Headless Runner WebUI screenshot" width="100%">
+</p>
+
 ---
 
 ## ✨ Features
@@ -86,6 +94,28 @@
 <tr><td>🔗 <b>Unified CLI</b></td><td><code>uvr mdx</code> / <code>uvr demucs</code> / <code>uvr vr</code> — one command for all</td></tr>
 <tr><td>📦 <b>PyPI Ready</b></td><td><code>pip install uvr-headless-runner</code> — instant setup</td></tr>
 </table>
+
+---
+
+## 🌐 WebUI (agent-webui branch)
+
+This branch includes a local **Web Workbench & Single Agent** layer on top of the existing CLI runners. The web UI and agent share the same task service, while separation is still performed by the original runners.
+
+**Key capabilities**
+
+- **Browser workbench** — upload audio, manage tasks, and monitor separation jobs from `http://127.0.0.1:8787`.
+- **Preview-first workflow** — generate a short audition (typically the first 30 seconds) before committing to a full track; request a full render or process directly when ready.
+- **Batch processing** — select uploaded tasks and apply the current plan to multiple files; each song gets its own task/artifacts and inference runs sequentially.
+- **Model library & downloads** — browse official models, filter installed/uninstalled models, and trigger downloads without occupying the inference slot.
+- **Hardware dashboard** — live GPU/VRAM/CPU/memory status (when available) refreshed in the UI.
+- **Agent assistant** — chat-driven control via an OpenAI-compatible endpoint (optional); manual controls remain usable without an API key.
+- **Tunable presets** — quality-related presets/parameters (e.g. MDX overlap, VR aggression, Demucs shifts) defined in `agent_web/presets.json`.
+
+**Setup & usage**
+
+See **[AGENT_WEBUI.md](AGENT_WEBUI.md)** for environment setup (separate Python env for the control service, inference environment, frontend build), configuration, startup, and current validation notes.
+
+> **Notes:** Demucs has no dedicated instrumental stem—use an MDX instrumental model for accompaniment. Preview and full-track runs share the same parameters but may sound slightly different due to context. After a service restart, running jobs are marked interrupted and queued jobs are paused until resumed.
 
 ---
 
