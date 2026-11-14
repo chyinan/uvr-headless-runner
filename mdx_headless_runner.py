@@ -982,9 +982,7 @@ def run_mdx_headless(
             'other': OTHER_STEM
         }
         stem_lower = stem.lower()
-        if stem_lower not in stem_map:
-            raise ValueError(f"Invalid stem: {stem}")
-        mdxnet_stem_select = stem_map[stem_lower]
+        mdxnet_stem_select = stem_map.get(stem_lower, stem)
     
     # 转换 wav_type 名称为 soundfile 格式
     wav_type_map = {
@@ -1160,8 +1158,8 @@ Examples:
     output_group.add_argument('--vocals-only', action='store_true', help='Save vocals only (= --primary-only)')
     output_group.add_argument('--instrumental-only', action='store_true', help='Save instrumental only (= --secondary-only)')
     
-    parser.add_argument('--stem', choices=['all', 'vocals', 'drums', 'bass', 'other'],
-                       help='Select stem to extract (MDX-C models only)')
+    parser.add_argument('--stem',
+                       help='Select one stem by name, or all (MDX-C models)')
     parser.add_argument('--quiet', '-q', action='store_true', help='Quiet mode')
     
     args = parser.parse_args()

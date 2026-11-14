@@ -123,3 +123,8 @@ secrets.json
 # Internal documentation (not for public)
 RELEASE_GUIDE.md
 BUGFIX_LOG.md
+
+# Agent web UI local state
+agent_web/config.json
+agent_web/data/
+webui/node_modules/

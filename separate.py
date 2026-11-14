@@ -710,8 +710,8 @@ class SeperateMDXC(SeperateAttributes):
             else:
                 if self.is_multi_stem_ensemble or len(stem_list) == 2:
                     source_primary = sources[stem_list[0]]
-                else: 
-                    sources[self.mdxnet_stem_select]
+                else:
+                    source_primary = sources[self.mdxnet_stem_select]
                 
             if self.is_secondary_model_activated and self.secondary_model:
                 self.secondary_source_primary, self.secondary_source_secondary = process_secondary_model(self.secondary_model, 
