@@ -1,0 +1,50 @@
+[
+  {
+    "id": "inst-hq3",
+    "arch": "mdx",
+    "model_name": "UVR-MDX-NET Inst HQ 3",
+    "output_target": "instrumental",
+    "primary_stem": "instrumental",
+    "params": {
+      "segment_size": 256,
+      "overlap": 0.25,
+      "batch_size": 1,
+      "wav_type": "PCM_24"
+    },
+    "summary": "Inst HQ 3 · overlap 0.25",
+    "use": "制作伴奏的默认起点。这个模型的主音轨是伴奏。",
+    "when": "用户要伴奏、卡拉OK或去人声，且没有提出比较。"
+  },
+  {
+    "id": "inst-hq3-overlap",
+    "arch": "mdx",
+    "model_name": "UVR-MDX-NET Inst HQ 3",
+    "output_target": "instrumental",
+    "primary_stem": "instrumental",
+    "params": {
+      "segment_size": 256,
+      "overlap": 0.75,
+      "batch_size": 1,
+      "wav_type": "PCM_24"
+    },
+    "summary": "Inst HQ 3 · overlap 0.75",
+    "use": "同一模型、更高重叠。重叠影响分块衔接，通常更慢。这不是 batch size。",
+    "when": "用户听完默认伴奏后明确要求再干净一点、减轻残留或换一版。"
+  },
+  {
+    "id": "voc-ft",
+    "arch": "mdx",
+    "model_name": "UVR-MDX-NET Voc FT",
+    "output_target": "vocals",
+    "primary_stem": "vocals",
+    "params": {
+      "segment_size": 256,
+      "overlap": 0.25,
+      "batch_size": 1,
+      "wav_type": "PCM_24"
+    },
+    "summary": "Voc FT · overlap 0.25",
+    "use": "提取人声的默认模型。主音轨是人声。若用户要求再调整，把 overlap 提高到 0.75，不要改 batch size 冒充音质档。",
+    "when": "用户要提取人声、干声或去掉伴奏。"
+  }
+]

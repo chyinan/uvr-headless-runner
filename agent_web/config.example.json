@@ -1,0 +1,12 @@
+{
+  "host": "127.0.0.1",
+  "port": 8787,
+  "inference_python": ["python"],
+  "device": "auto",
+  "data_dir": "",
+  "llm": {
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "model": "gpt-4o-mini"
+  }
+}
